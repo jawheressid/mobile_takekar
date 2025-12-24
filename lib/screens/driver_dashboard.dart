@@ -4,6 +4,7 @@ import '../widgets/buttons.dart';
 import '../widgets/inputs.dart';
 import '../widgets/cards.dart';
 import 'role_selection.dart';
+import '../services/auth_service.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
   const DriverDashboardScreen({super.key});
@@ -97,7 +98,11 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                     ),
                     const SizedBox(height: 16),
                     TextButton.icon(
-                      onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(RoleSelectionScreen.route, (route) => false),
+                      onPressed: () async {
+                        await AuthService().signOut();
+                        if (!context.mounted) return;
+                        Navigator.of(context).pushNamedAndRemoveUntil(RoleSelectionScreen.route, (route) => false);
+                      },
                       icon: const Icon(Icons.logout, color: AppColors.textSecondary),
                       label: const Text('Déconnexion', style: TextStyle(color: AppColors.textSecondary)),
                     ),

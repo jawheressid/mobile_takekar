@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_core/firebase_core.dart';
 import 'screens/auth/driver_login.dart';
 import 'screens/auth/driver_signup.dart';
 import 'screens/auth/user_login.dart';
@@ -9,7 +11,12 @@ import 'screens/splash.dart';
 import 'screens/user_dashboard.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb) {
+    await Firebase.initializeApp();
+  }
   runApp(const TakeKarApp());
 }
 

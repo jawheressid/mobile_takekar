@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../widgets/cards.dart';
 import 'role_selection.dart';
+import '../services/auth_service.dart';
 
 class UserDashboardScreen extends StatelessWidget {
   const UserDashboardScreen({super.key});
@@ -44,7 +45,11 @@ class UserDashboardScreen extends StatelessWidget {
                       ],
                     ),
                     GestureDetector(
-                      onTap: () => Navigator.of(context).pushNamedAndRemoveUntil(RoleSelectionScreen.route, (route) => false),
+                      onTap: () async {
+                        await AuthService().signOut();
+                        if (!context.mounted) return;
+                        Navigator.of(context).pushNamedAndRemoveUntil(RoleSelectionScreen.route, (route) => false);
+                      },
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
