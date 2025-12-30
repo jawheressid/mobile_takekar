@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../widgets/cards.dart';
+import 'follow_line/follow_line_select.dart';
 import 'role_selection.dart';
 import '../services/auth_service.dart';
 
@@ -11,7 +12,13 @@ class UserDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cards = [
-      FeatureCardData('Suivre la ligne', 'Localisation en temps réel', Icons.my_location, AppColors.sunrise),
+      FeatureCardData(
+        'Suivre la ligne',
+        'Localisation en temps réel',
+        Icons.my_location,
+        AppColors.sunrise,
+        onTap: () => Navigator.of(context).pushNamed(FollowLineSelectScreen.route),
+      ),
       FeatureCardData('Chercher un trajet', 'Meilleur itinéraire', Icons.search, AppColors.accentPink),
       FeatureCardData('Historique', 'Trajets passés', Icons.history, AppColors.sunrise),
       FeatureCardData('Signaler', 'Rapporter un problème', Icons.error_outline, AppColors.accentPink),

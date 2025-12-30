@@ -6,6 +6,7 @@ import 'screens/auth/driver_signup.dart';
 import 'screens/auth/user_login.dart';
 import 'screens/auth/user_signup.dart';
 import 'screens/driver_dashboard.dart';
+import 'screens/follow_line/follow_line_select.dart';
 import 'screens/role_selection.dart';
 import 'screens/splash.dart';
 import 'screens/user_dashboard.dart';
@@ -52,6 +53,7 @@ class TakeKarApp extends StatelessWidget {
         UserLoginScreen.route: (_) => const UserLoginScreen(),
         UserSignupScreen.route: (_) => const UserSignupScreen(),
         UserDashboardScreen.route: (_) => const UserDashboardScreen(),
+        FollowLineSelectScreen.route: (_) => const FollowLineSelectScreen(),
         DriverLoginScreen.route: (_) => const DriverLoginScreen(),
         DriverSignupScreen.route: (_) => const DriverSignupScreen(),
         DriverDashboardScreen.route: (_) => const DriverDashboardScreen(),
@@ -61,8 +63,6 @@ class TakeKarApp extends StatelessWidget {
 }
 
 FirebaseOptions _webFirebaseOptions() {
-  // Provide these with:
-  // flutter run -d chrome --dart-define=FIREBASE_API_KEY=... --dart-define=FIREBASE_APP_ID=... etc.
   const apiKey = String.fromEnvironment('FIREBASE_API_KEY');
   const appId = String.fromEnvironment('FIREBASE_APP_ID');
   const messagingSenderId = String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID');
