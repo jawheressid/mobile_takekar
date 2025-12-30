@@ -1,0 +1,10 @@
+{
+  "FIREBASE_API_KEY": "AIzaSyDUdVhJIGJ39HjBqM0_HSoeUjPKbs_Bt_I",
+  "FIREBASE_AUTH_DOMAIN": "takecar-10de1.firebaseapp.com",
+  "FIREBASE_DATABASE_URL": "https://takecar-10de1-default-rtdb.firebaseio.com",
+  "FIREBASE_PROJECT_ID": "takecar-10de1",
+  "FIREBASE_STORAGE_BUCKET": "takecar-10de1.firebasestorage.app",
+  "FIREBASE_MESSAGING_SENDER_ID": "529251247758",
+  "FIREBASE_APP_ID": "1:529251247758:web:bd3d0a09448f7343cd0bdf",
+  "FIREBASE_MEASUREMENT_ID": "G-EDYYREQMXE"
+}
