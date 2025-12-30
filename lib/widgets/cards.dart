@@ -61,11 +61,12 @@ class ProfileCard extends StatelessWidget {
 }
 
 class FeatureCardData {
-  FeatureCardData(this.title, this.subtitle, this.icon, this.color);
+  FeatureCardData(this.title, this.subtitle, this.icon, this.color, {this.onTap});
   final String title;
   final String subtitle;
   final IconData icon;
   final Color color;
+  final VoidCallback? onTap;
 }
 
 class FeatureCard extends StatelessWidget {
@@ -75,40 +76,45 @@ class FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1AFBC02D),
-            blurRadius: 10,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [data.color.withOpacity(0.9), data.color],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(14),
+    final borderRadius = BorderRadius.circular(16);
+    return InkWell(
+      onTap: data.onTap,
+      borderRadius: borderRadius,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: borderRadius,
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x1AFBC02D),
+              blurRadius: 10,
+              offset: Offset(0, 8),
             ),
-            child: Icon(data.icon, color: Colors.white),
-          ),
-          const Spacer(),
-          Text(data.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-          const SizedBox(height: 4),
-          Text(data.subtitle, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-        ],
+          ],
+        ),
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [data.color.withOpacity(0.9), data.color],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(data.icon, color: Colors.white),
+            ),
+            const Spacer(),
+            Text(data.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            const SizedBox(height: 4),
+            Text(data.subtitle, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          ],
+        ),
       ),
     );
   }
