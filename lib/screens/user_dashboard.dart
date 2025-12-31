@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../pages/report_problem_page.dart';
 import '../theme/app_colors.dart';
 import '../widgets/cards.dart';
 import 'follow_line/follow_line_select.dart';
@@ -21,7 +22,13 @@ class UserDashboardScreen extends StatelessWidget {
       ),
       FeatureCardData('Chercher un trajet', 'Meilleur itinéraire', Icons.search, AppColors.accentPink),
       FeatureCardData('Historique', 'Trajets passés', Icons.history, AppColors.sunrise),
-      FeatureCardData('Signaler', 'Rapporter un problème', Icons.error_outline, AppColors.accentPink),
+      FeatureCardData(
+        'Signaler',
+        'Rapporter un problème',
+        Icons.error_outline,
+        AppColors.accentPink,
+        onTap: () => Navigator.of(context).pushNamed(ReportProblemPage.route),
+      ),
     ];
 
     return Scaffold(
