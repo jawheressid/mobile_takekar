@@ -3,7 +3,17 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 class FollowLinePage extends StatelessWidget {
-  const FollowLinePage({super.key});
+  const FollowLinePage({
+    super.key,
+    required this.lineName,
+    required this.busId,
+  });
+
+  // La ligne choisie par le chauffeur (ex: "Ligne 3").
+  final String lineName;
+
+  // Identifiant du bus (ex: "BUS-2025-001").
+  final String busId;
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +21,7 @@ class FollowLinePage extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
-          // 🔶 HEADER
+          // HEADER: infos de service (ligne + bus + statut).
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
@@ -27,24 +37,24 @@ class FollowLinePage extends StatelessWidget {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      'Ligne 3',
-                      style: TextStyle(
+                      lineName,
+                      style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'BUS-2025-001',
-                      style: TextStyle(color: Colors.white70),
+                      busId,
+                      style: const TextStyle(color: Colors.white70),
                     ),
                   ],
                 ),
 
-                // 🟢 En service badge
+                // Badge d'état (pour l'instant: toujours "En service").
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -70,7 +80,7 @@ class FollowLinePage extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // 🗺️ MAP CARD
+          // CARTE: exemple simple avec un marker statique.
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
@@ -114,7 +124,7 @@ class FollowLinePage extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // 🔘 BUTTONS
+          // ACTIONS: boutons placeholder (non branchés pour l'instant).
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -155,13 +165,13 @@ class FollowLinePage extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // 🔴 FINIR LE TRAJET
+          // FIN DU SERVICE: pour l'instant on revient simplement à l'écran précédent.
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.stop_circle),
                 label: const Text('Finir le trajet'),
                 style: ElevatedButton.styleFrom(

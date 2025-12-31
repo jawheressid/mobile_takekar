@@ -8,9 +8,6 @@ import 'screens/auth/user_signup.dart';
 import 'screens/driver_dashboard.dart';
 import 'screens/follow_line/follow_line_select.dart';
 
-import 'screens/follow_line/follow_line_page.dart';
-
-
 import 'screens/role_selection.dart';
 import 'screens/splash.dart';
 import 'screens/user_dashboard.dart';

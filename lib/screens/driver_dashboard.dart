@@ -3,6 +3,7 @@ import '../theme/app_colors.dart';
 import '../widgets/buttons.dart';
 import '../widgets/inputs.dart';
 import '../widgets/cards.dart';
+import 'follow_line/follow_line_page.dart';
 import 'role_selection.dart';
 import '../services/auth_service.dart';
 
@@ -17,6 +18,13 @@ class DriverDashboardScreen extends StatefulWidget {
 class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
   final List<String> lines = ['Ligne 1', 'Ligne 2', 'Ligne 3'];
   String? selectedLine;
+  final _busController = TextEditingController(text: 'BUS-2025-001');
+
+  @override
+  void dispose() {
+    _busController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +59,9 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const RoundedTextField(label: 'Bus', hint: 'BUS-2025-001'),
+                    // Identifiant du bus (ex: plaque / code interne).
+                    // On le garde très simple: un champ texte modifiable.
+                    RoundedTextField(label: 'Bus', hint: 'BUS-2025-001', controller: _busController),
                     const SizedBox(height: 14),
                     const Text('Numéro de ligne', style: TextStyle(color: AppColors.textPrimary, fontSize: 15)),
                     const SizedBox(height: 6),
@@ -87,7 +97,31 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    PrimaryButton(label: 'Commencer le service', onPressed: () {}),
+                    PrimaryButton(
+                      label: 'Commencer le service',
+                      onPressed: () {
+                        // Règle métier simple:
+                        // - le chauffeur doit choisir une ligne
+                        // - ensuite on ouvre l'écran "FollowLinePage" (en service)
+                        if (selectedLine == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Veuillez sélectionner une ligne.')),
+                          );
+                          return;
+                        }
+
+                        final busId = _busController.text.trim().isEmpty ? 'BUS-2025-001' : _busController.text.trim();
+
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => FollowLinePage(
+                              lineName: selectedLine!,
+                              busId: busId,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     const SizedBox(height: 22),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
