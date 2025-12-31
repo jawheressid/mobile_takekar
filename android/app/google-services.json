@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "529251247758",
-    "project_id": "takecar-10de1",
-    "storage_bucket": "takecar-10de1.firebasestorage.app"
+    "project_number": "228156748282",
+    "project_id": "mobile-takekar",
+    "storage_bucket": "mobile-takekar.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:529251247758:android:2fbf60e1a2ae800dcd0bdf",
+        "mobilesdk_app_id": "1:228156748282:android:d681806f61900439093443",
         "android_client_info": {
           "package_name": "com.example.mon_app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCKG12XbixzfTmfP8n2uCqpCBWbeIQf5Xc"
+          "current_key": "AIzaSyCW6Tes1Z9ifAkxge1shh861nNEoRBuFok"
         }
       ],
       "services": {

@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'mobile-takekar.firebasestorage.app',
     measurementId: 'G-FFWRXMNV8L',
   );
+
 }

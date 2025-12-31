@@ -8,12 +8,13 @@ class FollowLinePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
           // 🔶 HEADER
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 40),
+            padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
             decoration: const BoxDecoration(
               color: Color(0xFFF4B400),
               borderRadius: BorderRadius.only(
@@ -21,96 +22,158 @@ class FollowLinePage extends StatelessWidget {
                 bottomRight: Radius.circular(30),
               ),
             ),
-            child: Column(
-              children: const [
-                Text(
-                  'Ligne 3', // ✅ بدّلنا الرقم
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Nord',
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-
-          // 🗺️ MAP
-          SizedBox(
-            height: 280,
-            child: FlutterMap(
-              options: MapOptions(
-                initialCenter: LatLng(36.8065, 10.1815), // تونس
-                initialZoom: 13,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.example.app',
-                ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: LatLng(36.8065, 10.1815),
-                      width: 50,
-                      height: 50,
-                      child: const Icon(
-                        Icons.directions_bus,
-                        color: Color(0xFFF4B400),
-                        size: 40,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Ligne 3',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'BUS-2025-001',
+                      style: TextStyle(color: Colors.white70),
                     ),
                   ],
                 ),
+
+                // 🟢 En service badge
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.circle,
+                          color: Colors.greenAccent, size: 10),
+                      SizedBox(width: 6),
+                      Text(
+                        'En service',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
 
-          // ℹ️ INFO CARD
+          const SizedBox(height: 16),
+
+          // 🗺️ MAP CARD
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
-              padding: const EdgeInsets.all(20),
+              height: 220,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: const [
                   BoxShadow(color: Colors.black12, blurRadius: 8),
                 ],
               ),
-              child: Column(
-                children: const [
-                  Text(
-                    '-- km/h',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+              clipBehavior: Clip.hardEdge,
+              child: FlutterMap(
+                options: MapOptions(
+                  initialCenter: LatLng(36.8065, 10.1815),
+                  initialZoom: 13,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.app',
                   ),
-                  Text('Vitesse actuelle'),
-                  SizedBox(height: 16),
-                  Text(
-                    '-- min',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFF4B400),
-                    ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(36.8065, 10.1815),
+                        width: 50,
+                        height: 50,
+                        child: const Icon(
+                          Icons.directions_bus,
+                          color: Color(0xFFF4B400),
+                          size: 40,
+                        ),
+                      ),
+                    ],
                   ),
-                  Text('à la prochaine station'),
                 ],
               ),
             ),
           ),
 
-          const Text(
-            'Aucune localisation disponible pour le moment.',
-            style: TextStyle(color: Colors.grey),
+          const SizedBox(height: 20),
+
+          // 🔘 BUTTONS
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    label: const Text('Community'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF4B400),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.report_gmailerrorred),
+                    label: const Text('Report'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.black87,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 🔴 FINIR LE TRAJET
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.stop_circle),
+                label: const Text('Finir le trajet'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
