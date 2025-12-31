@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import '../../pages/report_problem_page.dart';
 
 class FollowLinePage extends StatelessWidget {
   const FollowLinePage({
@@ -147,7 +148,7 @@ class FollowLinePage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).pushNamed(ReportProblemPage.route),
                     icon: const Icon(Icons.report_gmailerrorred),
                     label: const Text('Report'),
                     style: OutlinedButton.styleFrom(

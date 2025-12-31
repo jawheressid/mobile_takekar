@@ -66,7 +66,7 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                   const Text('Type de problème'),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: selectedType,
+                    initialValue: selectedType,
                     hint: const Text('Sélectionnez un type'),
                     items: const [
                       DropdownMenuItem(
