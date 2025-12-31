@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../pages/report_problem_page.dart';
+import '../pages/history_page.dart';
 import '../pages/trip_search_page.dart';
 import '../theme/app_colors.dart';
 import '../widgets/cards.dart';
@@ -34,6 +35,7 @@ class UserDashboardScreen extends StatelessWidget {
         'Trajets passés',
         Icons.history,
         AppColors.sunrise,
+        onTap: () => Navigator.of(context).pushNamed(HistoryPage.route),
       ),
       FeatureCardData(
         'Signaler',
