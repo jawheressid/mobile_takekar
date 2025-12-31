@@ -2,7 +2,6 @@ import 'pages/report_problem_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_core/firebase_core.dart';
-import 'pages/report_problem_page.dart';
 import 'pages/trip_details_page.dart';
 import 'pages/trip_results_page.dart';
 import 'pages/trip_search_page.dart';

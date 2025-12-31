@@ -5,6 +5,7 @@ import '../theme/app_colors.dart';
 import '../widgets/cards.dart';
 import 'follow_line/follow_line_select.dart';
 import 'role_selection.dart';
+import '../services/auth_service.dart';
 
 class UserDashboardScreen extends StatelessWidget {
   const UserDashboardScreen({super.key});
