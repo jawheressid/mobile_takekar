@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../pages/report_problem_page.dart';
+import '../pages/trip_search_page.dart';
 import '../theme/app_colors.dart';
 import '../widgets/cards.dart';
 import 'follow_line/follow_line_select.dart';
@@ -18,10 +19,22 @@ class UserDashboardScreen extends StatelessWidget {
         'Localisation en temps réel',
         Icons.my_location,
         AppColors.sunrise,
-        onTap: () => Navigator.of(context).pushNamed(FollowLineSelectScreen.route),
+        onTap: () =>
+            Navigator.of(context).pushNamed(FollowLineSelectScreen.route),
       ),
-      FeatureCardData('Chercher un trajet', 'Meilleur itinéraire', Icons.search, AppColors.accentPink),
-      FeatureCardData('Historique', 'Trajets passés', Icons.history, AppColors.sunrise),
+      FeatureCardData(
+        'Chercher un trajet',
+        'Meilleur itinéraire',
+        Icons.search,
+        AppColors.accentPink,
+        onTap: () => Navigator.of(context).pushNamed(TripSearchPage.route),
+      ),
+      FeatureCardData(
+        'Historique',
+        'Trajets passés',
+        Icons.history,
+        AppColors.sunrise,
+      ),
       FeatureCardData(
         'Signaler',
         'Rapporter un problème',
@@ -53,21 +66,34 @@ class UserDashboardScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
-                        Text('TAKE كار', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600)),
+                        Text(
+                          'TAKE كار',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         SizedBox(height: 4),
-                        Text('Bonjour 👋', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                        Text(
+                          'Bonjour 👋',
+                          style: TextStyle(color: Colors.white70, fontSize: 16),
+                        ),
                       ],
                     ),
                     GestureDetector(
                       onTap: () async {
                         await AuthService().signOut();
                         if (!context.mounted) return;
-                        Navigator.of(context).pushNamedAndRemoveUntil(RoleSelectionScreen.route, (route) => false);
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          RoleSelectionScreen.route,
+                          (route) => false,
+                        );
                       },
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withAlpha(51),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(Icons.logout, color: Colors.white),
@@ -77,20 +103,25 @@ class UserDashboardScreen extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 18,
+                ),
                 child: Column(
                   children: [
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: cards.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 1,
-                        crossAxisSpacing: 14,
-                        mainAxisSpacing: 14,
-                      ),
-                      itemBuilder: (context, index) => FeatureCard(data: cards[index]),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 1,
+                            crossAxisSpacing: 14,
+                            mainAxisSpacing: 14,
+                          ),
+                      itemBuilder: (context, index) =>
+                          FeatureCard(data: cards[index]),
                     ),
                     const SizedBox(height: 16),
                     Container(
@@ -109,12 +140,20 @@ class UserDashboardScreen extends StatelessWidget {
                       ),
                       child: Row(
                         children: const [
-                          Icon(Icons.lightbulb_outline, color: AppColors.sunrise, size: 28),
+                          Icon(
+                            Icons.lightbulb_outline,
+                            color: AppColors.sunrise,
+                            size: 28,
+                          ),
                           SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Astuce du jour\nSuivez votre bus en temps réel pour ne jamais le manquer',
-                              style: TextStyle(color: AppColors.textPrimary, fontSize: 15, height: 1.3),
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 15,
+                                height: 1.3,
+                              ),
                             ),
                           ),
                         ],

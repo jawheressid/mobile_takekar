@@ -65,11 +65,17 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
       );
 
       if (!mounted) return;
-      Navigator.of(context).pushNamedAndRemoveUntil(UserDashboardScreen.route, (route) => false);
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(UserDashboardScreen.route, (route) => false);
     } catch (e) {
       if (!mounted) return;
-      final message = (e is FirebaseAuthException) ? friendlyAuthErrorMessage(e) : friendlyRoleErrorMessage(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      final message = (e is FirebaseAuthException)
+          ? friendlyAuthErrorMessage(e)
+          : friendlyRoleErrorMessage(e);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -125,8 +131,12 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                   textInputAction: TextInputAction.next,
                   validator: (value) {
                     final password = value ?? '';
-                    if (password.isEmpty) return 'Veuillez saisir un mot de passe.';
-                    if (password.length < 6) return '6 caractères minimum.';
+                    if (password.isEmpty) {
+                      return 'Veuillez saisir un mot de passe.';
+                    }
+                    if (password.length < 6) {
+                      return '6 caractères minimum.';
+                    }
                     return null;
                   },
                 ),
@@ -144,8 +154,12 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                   },
                   validator: (value) {
                     final confirm = value ?? '';
-                    if (confirm.isEmpty) return 'Veuillez confirmer le mot de passe.';
-                    if (confirm != _passwordController.text) return 'Les mots de passe ne correspondent pas.';
+                    if (confirm.isEmpty) {
+                      return 'Veuillez confirmer le mot de passe.';
+                    }
+                    if (confirm != _passwordController.text) {
+                      return 'Les mots de passe ne correspondent pas.';
+                    }
                     return null;
                   },
                 ),
@@ -168,7 +182,11 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
           children: [
             const Text('Déjà inscrit ? '),
             TextButton(
-              onPressed: _isSubmitting ? null : () => Navigator.of(context).pushReplacementNamed(UserLoginScreen.route),
+              onPressed: _isSubmitting
+                  ? null
+                  : () => Navigator.of(
+                      context,
+                    ).pushReplacementNamed(UserLoginScreen.route),
               child: const Text('Se connecter'),
             ),
           ],

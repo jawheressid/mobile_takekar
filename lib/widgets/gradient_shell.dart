@@ -51,12 +51,21 @@ class GradientShell extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 16)),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 18,
+                ),
                 child: Column(children: children),
               ),
             ],

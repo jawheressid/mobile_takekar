@@ -72,11 +72,17 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
       );
 
       if (!mounted) return;
-      Navigator.of(context).pushNamedAndRemoveUntil(DriverDashboardScreen.route, (route) => false);
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(DriverDashboardScreen.route, (route) => false);
     } catch (e) {
       if (!mounted) return;
-      final message = (e is FirebaseAuthException) ? friendlyAuthErrorMessage(e) : friendlyRoleErrorMessage(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      final message = (e is FirebaseAuthException)
+          ? friendlyAuthErrorMessage(e)
+          : friendlyRoleErrorMessage(e);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -132,8 +138,12 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
                   textInputAction: TextInputAction.next,
                   validator: (value) {
                     final password = value ?? '';
-                    if (password.isEmpty) return 'Veuillez saisir un mot de passe.';
-                    if (password.length < 6) return '6 caractères minimum.';
+                    if (password.isEmpty) {
+                      return 'Veuillez saisir un mot de passe.';
+                    }
+                    if (password.length < 6) {
+                      return '6 caractères minimum.';
+                    }
                     return null;
                   },
                 ),
@@ -147,8 +157,12 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
                   textInputAction: TextInputAction.next,
                   validator: (value) {
                     final confirm = value ?? '';
-                    if (confirm.isEmpty) return 'Veuillez confirmer le mot de passe.';
-                    if (confirm != _passwordController.text) return 'Les mots de passe ne correspondent pas.';
+                    if (confirm.isEmpty) {
+                      return 'Veuillez confirmer le mot de passe.';
+                    }
+                    if (confirm != _passwordController.text) {
+                      return 'Les mots de passe ne correspondent pas.';
+                    }
                     return null;
                   },
                 ),
@@ -161,8 +175,12 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
                   textInputAction: TextInputAction.next,
                   validator: (value) {
                     final code = (value ?? '').trim();
-                    if (code.isEmpty) return 'Veuillez saisir le code chauffeur.';
-                    if (code.length != 6) return 'Code invalide (6 chiffres).';
+                    if (code.isEmpty) {
+                      return 'Veuillez saisir le code chauffeur.';
+                    }
+                    if (code.length != 6) {
+                      return 'Code invalide (6 chiffres).';
+                    }
                     return null;
                   },
                 ),
@@ -199,9 +217,16 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Déjà inscrit ? ', style: TextStyle(color: AppColors.textSecondary)),
+            const Text(
+              'Déjà inscrit ? ',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
             TextButton(
-              onPressed: _isSubmitting ? null : () => Navigator.of(context).pushReplacementNamed(DriverLoginScreen.route),
+              onPressed: _isSubmitting
+                  ? null
+                  : () => Navigator.of(
+                      context,
+                    ).pushReplacementNamed(DriverLoginScreen.route),
               child: const Text('Se connecter'),
             ),
           ],

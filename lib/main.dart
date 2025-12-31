@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_core/firebase_core.dart';
 import 'pages/report_problem_page.dart';
+import 'pages/trip_details_page.dart';
+import 'pages/trip_results_page.dart';
+import 'pages/trip_search_page.dart';
 import 'screens/auth/driver_login.dart';
 import 'screens/auth/driver_signup.dart';
 import 'screens/auth/user_login.dart';
@@ -13,13 +16,14 @@ import 'screens/splash.dart';
 import 'screens/user_dashboard.dart';
 import 'theme/app_theme.dart';
 
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Object? firebaseInitError;
   try {
     // NOTE: On Web, Firebase needs explicit config (via --dart-define) otherwise FirebaseAuth/Firestore will crash.
-    await Firebase.initializeApp(options: kIsWeb ? _webFirebaseOptions() : null);
+    await Firebase.initializeApp(
+      options: kIsWeb ? _webFirebaseOptions() : null,
+    );
   } catch (e) {
     firebaseInitError = e;
   }
@@ -50,6 +54,9 @@ class TakeKarApp extends StatelessWidget {
       initialRoute: SplashScreen.route,
       routes: {
         ReportProblemPage.route: (_) => const ReportProblemPage(),
+        TripSearchPage.route: (_) => const TripSearchPage(),
+        TripResultsPage.route: (_) => const TripResultsPage(),
+        TripDetailsPage.route: (_) => const TripDetailsPage(),
         SplashScreen.route: (_) => const SplashScreen(),
         RoleSelectionScreen.route: (_) => const RoleSelectionScreen(),
         UserLoginScreen.route: (_) => const UserLoginScreen(),
@@ -67,14 +74,19 @@ class TakeKarApp extends StatelessWidget {
 FirebaseOptions _webFirebaseOptions() {
   const apiKey = String.fromEnvironment('FIREBASE_API_KEY');
   const appId = String.fromEnvironment('FIREBASE_APP_ID');
-  const messagingSenderId = String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID');
+  const messagingSenderId = String.fromEnvironment(
+    'FIREBASE_MESSAGING_SENDER_ID',
+  );
   const projectId = String.fromEnvironment('FIREBASE_PROJECT_ID');
   const authDomain = String.fromEnvironment('FIREBASE_AUTH_DOMAIN');
   const storageBucket = String.fromEnvironment('FIREBASE_STORAGE_BUCKET');
   const measurementId = String.fromEnvironment('FIREBASE_MEASUREMENT_ID');
   const databaseURL = String.fromEnvironment('FIREBASE_DATABASE_URL');
 
-  if (apiKey.isEmpty || appId.isEmpty || messagingSenderId.isEmpty || projectId.isEmpty) {
+  if (apiKey.isEmpty ||
+      appId.isEmpty ||
+      messagingSenderId.isEmpty ||
+      projectId.isEmpty) {
     throw StateError(
       'Missing Firebase Web config. Define: FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_MESSAGING_SENDER_ID, FIREBASE_PROJECT_ID.',
     );
@@ -123,10 +135,7 @@ class _FirebaseInitErrorScreen extends StatelessWidget {
                 '  --dart-define=FIREBASE_PROJECT_ID=...',
               ),
               const SizedBox(height: 12),
-              Text(
-                error.toString(),
-                style: const TextStyle(color: Colors.red),
-              ),
+              Text(error.toString(), style: const TextStyle(color: Colors.red)),
             ],
           ),
         ),

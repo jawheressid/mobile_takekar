@@ -55,16 +55,26 @@ class _FollowLineSelectScreenState extends State<FollowLineSelectScreen> {
                   const SizedBox(height: 6),
                   const Text(
                     'Suivre la ligne',
-                    style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  const Text('Localisez votre bus', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                  const Text(
+                    'Localisez votre bus',
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
                 ],
               ),
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 18,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -80,16 +90,20 @@ class _FollowLineSelectScreenState extends State<FollowLineSelectScreen> {
                               isExpanded: true,
                               borderRadius: BorderRadius.circular(14),
                               items: lines
-                                  .map((e) => DropdownMenuItem<String>(
-                                        value: e,
-                                        child: Text(e),
-                                      ))
+                                  .map(
+                                    (e) => DropdownMenuItem<String>(
+                                      value: e,
+                                      child: Text(e),
+                                    ),
+                                  )
                                   .toList(),
                               onChanged: (value) {
                                 setState(() {
                                   _selectedLine = value;
                                   _selectedRegion = null;
-                                  _regionsFuture = value == null ? null : _service.fetchRegions(lineName: value);
+                                  _regionsFuture = value == null
+                                      ? null
+                                      : _service.fetchRegions(lineName: value);
                                 });
                               },
                             ),
@@ -98,7 +112,13 @@ class _FollowLineSelectScreenState extends State<FollowLineSelectScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    const Text('Région', style: TextStyle(color: AppColors.textPrimary, fontSize: 15)),
+                    const Text(
+                      'Région',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     _DropdownCard(
                       child: FutureBuilder<List<String>>(
@@ -113,12 +133,17 @@ class _FollowLineSelectScreenState extends State<FollowLineSelectScreen> {
                               isExpanded: true,
                               borderRadius: BorderRadius.circular(14),
                               items: regions
-                                  .map((e) => DropdownMenuItem<String>(
-                                        value: e,
-                                        child: Text(e),
-                                      ))
+                                  .map(
+                                    (e) => DropdownMenuItem<String>(
+                                      value: e,
+                                      child: Text(e),
+                                    ),
+                                  )
                                   .toList(),
-                              onChanged: enabled ? (value) => setState(() => _selectedRegion = value) : null,
+                              onChanged: enabled
+                                  ? (value) =>
+                                        setState(() => _selectedRegion = value)
+                                  : null,
                             ),
                           );
                         },
@@ -159,12 +184,20 @@ class _FollowLineSelectScreenState extends State<FollowLineSelectScreen> {
                       ),
                       child: Row(
                         children: const [
-                          Icon(Icons.push_pin, color: AppColors.accentPink, size: 26),
+                          Icon(
+                            Icons.push_pin,
+                            color: AppColors.accentPink,
+                            size: 26,
+                          ),
                           SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Information\nSélectionnez votre ligne et région pour voir la position exacte du bus',
-                              style: TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.3),
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                height: 1.3,
+                              ),
                             ),
                           ),
                         ],
@@ -205,4 +238,3 @@ class _DropdownCard extends StatelessWidget {
     );
   }
 }
-

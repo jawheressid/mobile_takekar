@@ -70,14 +70,27 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     SizedBox(height: 6),
-                    Text('Tableau de bord', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Tableau de bord',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     SizedBox(height: 6),
-                    Text('Commencez votre service', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                    Text(
+                      'Commencez votre service',
+                      style: TextStyle(color: Colors.white70, fontSize: 16),
+                    ),
                   ],
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 18,
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -90,16 +103,27 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                         textInputAction: TextInputAction.done,
                         validator: (value) {
                           final busId = (value ?? '').trim();
-                          if (busId.isEmpty) return 'Veuillez saisir l’identifiant du bus.';
+                          if (busId.isEmpty) {
+                            return 'Veuillez saisir l’identifiant du bus.';
+                          }
                           return null;
                         },
                         onFieldSubmitted: (_) => _startService(),
                       ),
                       const SizedBox(height: 14),
-                      const Text('Numéro de ligne', style: TextStyle(color: AppColors.textPrimary, fontSize: 15)),
+                      const Text(
+                        'Numéro de ligne',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 15,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(14),
@@ -125,12 +149,16 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                                   ),
                                 )
                                 .toList(),
-                            onChanged: (value) => setState(() => selectedLine = value),
+                            onChanged: (value) =>
+                                setState(() => selectedLine = value),
                           ),
                         ),
                       ),
                       const SizedBox(height: 16),
-                      PrimaryButton(label: 'Commencer le service', onPressed: _startService),
+                      PrimaryButton(
+                        label: 'Commencer le service',
+                        onPressed: _startService,
+                      ),
                       const SizedBox(height: 22),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -144,10 +172,19 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                         onPressed: () async {
                           await AuthService().signOut();
                           if (!context.mounted) return;
-                          Navigator.of(context).pushNamedAndRemoveUntil(RoleSelectionScreen.route, (route) => false);
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            RoleSelectionScreen.route,
+                            (route) => false,
+                          );
                         },
-                        icon: const Icon(Icons.logout, color: AppColors.textSecondary),
-                        label: const Text('Déconnexion', style: TextStyle(color: AppColors.textSecondary)),
+                        icon: const Icon(
+                          Icons.logout,
+                          color: AppColors.textSecondary,
+                        ),
+                        label: const Text(
+                          'Déconnexion',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
                       ),
                     ],
                   ),

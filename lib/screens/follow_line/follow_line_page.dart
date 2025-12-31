@@ -48,30 +48,25 @@ class FollowLinePage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      busId,
-                      style: const TextStyle(color: Colors.white70),
-                    ),
+                    Text(busId, style: const TextStyle(color: Colors.white70)),
                   ],
                 ),
 
                 // Badge d'état (pour l'instant: toujours "En service").
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
+                    color: Colors.white.withAlpha(64),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     children: const [
-                      Icon(Icons.circle,
-                          color: Colors.greenAccent, size: 10),
+                      Icon(Icons.circle, color: Colors.greenAccent, size: 10),
                       SizedBox(width: 6),
-                      Text(
-                        'En service',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      Text('En service', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -148,7 +143,9 @@ class FollowLinePage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => Navigator.of(context).pushNamed(ReportProblemPage.route),
+                    onPressed: () => Navigator.of(
+                      context,
+                    ).pushNamed(ReportProblemPage.route),
                     icon: const Icon(Icons.report_gmailerrorred),
                     label: const Text('Report'),
                     style: OutlinedButton.styleFrom(
