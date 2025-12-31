@@ -30,7 +30,10 @@ class RoundedTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.textPrimary, fontSize: 15)),
+        Text(
+          label,
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+        ),
         const SizedBox(height: 6),
         TextFormField(
           controller: controller,
@@ -44,7 +47,10 @@ class RoundedTextField extends StatelessWidget {
             hintText: hint,
             filled: true,
             fillColor: AppColors.surface,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,

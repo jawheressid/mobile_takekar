@@ -7,7 +7,11 @@ import '../../services/follow_line_service.dart';
 import '../../theme/app_colors.dart';
 
 class LineTrackingScreen extends StatelessWidget {
-  const LineTrackingScreen({super.key, required this.lineName, required this.regionName});
+  const LineTrackingScreen({
+    super.key,
+    required this.lineName,
+    required this.regionName,
+  });
 
   final String lineName;
   final String regionName;
@@ -41,21 +45,39 @@ class LineTrackingScreen extends StatelessWidget {
                       const Spacer(),
                     ],
                   ),
-                  Text(lineName, style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w700)),
+                  Text(
+                    lineName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(regionName, style: const TextStyle(color: Colors.white70, fontSize: 15)),
+                  Text(
+                    regionName,
+                    style: const TextStyle(color: Colors.white70, fontSize: 15),
+                  ),
                 ],
               ),
             ),
             Expanded(
               child: StreamBuilder<BusLocation?>(
-                stream: service.watchBusLocation(lineName: lineName, regionName: regionName),
+                stream: service.watchBusLocation(
+                  lineName: lineName,
+                  regionName: regionName,
+                ),
                 builder: (context, snapshot) {
                   final location = snapshot.data;
-                  final point = location == null ? const LatLng(36.8665, 10.1647) : LatLng(location.latitude, location.longitude);
+                  final point = location == null
+                      ? const LatLng(36.8665, 10.1647)
+                      : LatLng(location.latitude, location.longitude);
 
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 18,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -70,7 +92,8 @@ class LineTrackingScreen extends StatelessWidget {
                               ),
                               children: [
                                 TileLayer(
-                                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                  urlTemplate:
+                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                   userAgentPackageName: 'com.takekar.app',
                                 ),
                                 MarkerLayer(
@@ -81,13 +104,23 @@ class LineTrackingScreen extends StatelessWidget {
                                       height: 44,
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          color: AppColors.sunrise.withOpacity(0.9),
+                                          color: AppColors.sunrise.withAlpha(
+                                            230,
+                                          ),
                                           shape: BoxShape.circle,
                                           boxShadow: const [
-                                            BoxShadow(color: Color(0x33000000), blurRadius: 12, offset: Offset(0, 6)),
+                                            BoxShadow(
+                                              color: Color(0x33000000),
+                                              blurRadius: 12,
+                                              offset: Offset(0, 6),
+                                            ),
                                           ],
                                         ),
-                                        child: const Icon(Icons.directions_bus, color: Colors.white, size: 22),
+                                        child: const Icon(
+                                          Icons.directions_bus,
+                                          color: Colors.white,
+                                          size: 22,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -126,8 +159,12 @@ class _InfoPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final speedText = location?.speedKmh == null ? '-- km/h' : '${location!.speedKmh!.toStringAsFixed(0)} km/h';
-    final etaText = location?.nextStopEtaMinutes == null ? '-- min' : '${location!.nextStopEtaMinutes} min';
+    final speedText = location?.speedKmh == null
+        ? '-- km/h'
+        : '${location!.speedKmh!.toStringAsFixed(0)} km/h';
+    final etaText = location?.nextStopEtaMinutes == null
+        ? '-- min'
+        : '${location!.nextStopEtaMinutes} min';
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -151,23 +188,42 @@ class _InfoPanel extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 speedText,
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          const Text('Vitesse actuelle', style: TextStyle(color: AppColors.textSecondary)),
+          const Text(
+            'Vitesse actuelle',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
           const SizedBox(height: 14),
           const Divider(height: 1),
           const SizedBox(height: 14),
-          const Text('Arrivée estimée', style: TextStyle(color: AppColors.textSecondary)),
+          const Text(
+            'Arrivée estimée',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
           const SizedBox(height: 6),
-          Text(etaText, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.sunrise)),
+          Text(
+            etaText,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: AppColors.sunrise,
+            ),
+          ),
           const SizedBox(height: 6),
-          const Text('à la prochaine station', style: TextStyle(color: AppColors.textSecondary)),
+          const Text(
+            'à la prochaine station',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
         ],
       ),
     );
   }
 }
-

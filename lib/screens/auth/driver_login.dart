@@ -58,18 +58,27 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
         throw InvalidUserRoleException(expected: UserRole.driver, actual: role);
       }
 
-      final ok = await _auth.verifyDriverCode(uid: uid, code: _driverCodeController.text);
+      final ok = await _auth.verifyDriverCode(
+        uid: uid,
+        code: _driverCodeController.text,
+      );
       if (!ok) {
         await _auth.signOut();
         throw InvalidDriverCodeException();
       }
 
       if (!mounted) return;
-      Navigator.of(context).pushNamedAndRemoveUntil(DriverDashboardScreen.route, (route) => false);
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(DriverDashboardScreen.route, (route) => false);
     } catch (e) {
       if (!mounted) return;
-      final message = (e is FirebaseAuthException) ? friendlyAuthErrorMessage(e) : friendlyRoleErrorMessage(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      final message = (e is FirebaseAuthException)
+          ? friendlyAuthErrorMessage(e)
+          : friendlyRoleErrorMessage(e);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -111,8 +120,12 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                   textInputAction: TextInputAction.next,
                   validator: (value) {
                     final password = value ?? '';
-                    if (password.isEmpty) return 'Veuillez saisir votre mot de passe.';
-                    if (password.length < 6) return 'Mot de passe trop court.';
+                    if (password.isEmpty) {
+                      return 'Veuillez saisir votre mot de passe.';
+                    }
+                    if (password.length < 6) {
+                      return 'Mot de passe trop court.';
+                    }
                     return null;
                   },
                 ),
@@ -129,8 +142,12 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                   },
                   validator: (value) {
                     final code = (value ?? '').trim();
-                    if (code.isEmpty) return 'Veuillez saisir le code chauffeur.';
-                    if (code.length != 6) return 'Code invalide (6 chiffres).';
+                    if (code.isEmpty) {
+                      return 'Veuillez saisir le code chauffeur.';
+                    }
+                    if (code.length != 6) {
+                      return 'Code invalide (6 chiffres).';
+                    }
                     return null;
                   },
                 ),
@@ -151,10 +168,19 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Pas encore de compte ? ', style: TextStyle(color: AppColors.textSecondary)),
+            const Text(
+              'Pas encore de compte ? ',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
             TextButton(
-              onPressed: _isSubmitting ? null : () => Navigator.of(context).pushNamed(DriverSignupScreen.route),
-              style: TextButton.styleFrom(foregroundColor: AppColors.sunriseDeep),
+              onPressed: _isSubmitting
+                  ? null
+                  : () => Navigator.of(
+                      context,
+                    ).pushNamed(DriverSignupScreen.route),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.sunriseDeep,
+              ),
               child: const Text('S’inscrire'),
             ),
           ],

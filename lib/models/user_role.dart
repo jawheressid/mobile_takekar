@@ -1,7 +1,4 @@
-enum UserRole {
-  user,
-  driver,
-}
+enum UserRole { user, driver }
 
 UserRole? userRoleFromString(String? value) {
   switch (value) {
@@ -22,4 +19,3 @@ String userRoleToString(UserRole role) {
       return 'driver';
   }
 }
-

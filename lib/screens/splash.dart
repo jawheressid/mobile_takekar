@@ -47,19 +47,34 @@ class _SplashScreenState extends State<SplashScreen> {
                       gradient: sunriseGradient,
                       borderRadius: BorderRadius.circular(26),
                       boxShadow: const [
-                        BoxShadow(color: Color(0x33FBC02D), blurRadius: 18, offset: Offset(0, 10)),
+                        BoxShadow(
+                          color: Color(0x33FBC02D),
+                          blurRadius: 18,
+                          offset: Offset(0, 10),
+                        ),
                       ],
                     ),
-                    child: const Icon(Icons.directions_bus, color: Colors.white, size: 52),
+                    child: const Icon(
+                      Icons.directions_bus,
+                      color: Colors.white,
+                      size: 52,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   const Text(
                     'takeكار vous souhaite une bonne journée',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 18),
-                  const Text('Chargement...', style: TextStyle(color: AppColors.textSecondary)),
+                  const Text(
+                    'Chargement...',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                   const SizedBox(height: 22),
                   TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0, end: 1),

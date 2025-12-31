@@ -48,9 +48,22 @@ class ProfileCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(subtitle, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ],
@@ -61,7 +74,13 @@ class ProfileCard extends StatelessWidget {
 }
 
 class FeatureCardData {
-  FeatureCardData(this.title, this.subtitle, this.icon, this.color, {this.onTap});
+  FeatureCardData(
+    this.title,
+    this.subtitle,
+    this.icon,
+    this.color, {
+    this.onTap,
+  });
   final String title;
   final String subtitle;
   final IconData icon;
@@ -101,7 +120,7 @@ class FeatureCard extends StatelessWidget {
               height: 50,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [data.color.withOpacity(0.9), data.color],
+                  colors: [data.color.withAlpha(230), data.color],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -110,9 +129,22 @@ class FeatureCard extends StatelessWidget {
               child: Icon(data.icon, color: Colors.white),
             ),
             const Spacer(),
-            Text(data.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            Text(
+              data.title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(data.subtitle, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            Text(
+              data.subtitle,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ],
         ),
       ),
@@ -144,11 +176,22 @@ class StatsCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Text(label, style: const TextStyle(color: AppColors.textSecondary), textAlign: TextAlign.center),
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),

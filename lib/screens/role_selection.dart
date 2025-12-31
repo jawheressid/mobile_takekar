@@ -40,38 +40,65 @@ class RoleSelectionScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.directions_bus, color: AppColors.sunrise, size: 48),
+                    child: const Icon(
+                      Icons.directions_bus,
+                      color: AppColors.sunrise,
+                      size: 48,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text.rich(
                     TextSpan(
                       children: [
-                        const TextSpan(text: 'TAKE ', style: TextStyle(fontWeight: FontWeight.bold)),
-                        TextSpan(text: 'كار', style: TextStyle(color: AppColors.sunriseDeep)),
+                        const TextSpan(
+                          text: 'TAKE ',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(
+                          text: 'كار',
+                          style: TextStyle(color: AppColors.sunriseDeep),
+                        ),
                       ],
                     ),
-                    style: const TextStyle(fontSize: 28, letterSpacing: 0.5, color: AppColors.textPrimary),
+                    style: const TextStyle(
+                      fontSize: 28,
+                      letterSpacing: 0.5,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  Container(width: 46, height: 4, decoration: BoxDecoration(color: AppColors.sunrise, borderRadius: BorderRadius.circular(12))),
+                  Container(
+                    width: 46,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.sunrise,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   const Text(
                     'Choisissez votre profil',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 26),
                   ProfileCard(
                     icon: Icons.person_outline,
                     title: 'Utilisateur',
                     subtitle: 'Rechercher un transport',
-                    onTap: () => Navigator.of(context).pushNamed(UserLoginScreen.route),
+                    onTap: () =>
+                        Navigator.of(context).pushNamed(UserLoginScreen.route),
                   ),
                   const SizedBox(height: 16),
                   ProfileCard(
                     icon: Icons.engineering_outlined,
                     title: 'Chauffeur',
                     subtitle: 'Conduire un bus',
-                    onTap: () => Navigator.of(context).pushNamed(DriverLoginScreen.route),
+                    onTap: () => Navigator.of(
+                      context,
+                    ).pushNamed(DriverLoginScreen.route),
                   ),
                 ],
               ),

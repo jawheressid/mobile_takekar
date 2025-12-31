@@ -5,15 +5,16 @@ import '../models/user_role.dart';
 
 class AuthService {
   AuthService({FirebaseAuth? firebaseAuth, FirebaseFirestore? firestore})
-      : _auth = firebaseAuth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+    : _auth = firebaseAuth ?? FirebaseAuth.instance,
+      _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
   User? get currentUser => _auth.currentUser;
 
-  DocumentReference<Map<String, dynamic>> userDoc(String uid) => _firestore.collection('users').doc(uid);
+  DocumentReference<Map<String, dynamic>> userDoc(String uid) =>
+      _firestore.collection('users').doc(uid);
 
   Future<void> upsertUserProfile({
     required String uid,
@@ -34,7 +35,10 @@ class AuthService {
     return _firestore.runTransaction((tx) async {
       final snapshot = await tx.get(ref);
       if (!snapshot.exists) {
-        tx.set(ref, <String, dynamic>{...base, 'createdAt': FieldValue.serverTimestamp()});
+        tx.set(ref, <String, dynamic>{
+          ...base,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
       } else {
         tx.set(ref, base, SetOptions(merge: true));
       }
@@ -47,7 +51,10 @@ class AuthService {
     return userRoleFromString(data?['role'] as String?);
   }
 
-  Future<bool> verifyDriverCode({required String uid, required String code}) async {
+  Future<bool> verifyDriverCode({
+    required String uid,
+    required String code,
+  }) async {
     final snapshot = await userDoc(uid).get();
     final data = snapshot.data();
     final stored = (data?['driverCode'] as String?)?.trim();
@@ -66,7 +73,10 @@ class AuthService {
     required String email,
     required String password,
   }) {
-    return _auth.createUserWithEmailAndPassword(email: email, password: password);
+    return _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
   }
 
   Future<void> sendPasswordResetEmail({required String email}) {
@@ -96,7 +106,9 @@ Future<UserRole> requireUserRole(AuthService auth, String uid) async {
 }
 
 String friendlyAuthErrorMessage(Object error) {
-  if (error is! FirebaseAuthException) return 'Une erreur est survenue. Veuillez réessayer.';
+  if (error is! FirebaseAuthException) {
+    return 'Une erreur est survenue. Veuillez réessayer.';
+  }
 
   switch (error.code) {
     case 'invalid-email':

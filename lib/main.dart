@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_core/firebase_core.dart';
 import 'pages/report_problem_page.dart';
+import 'pages/trip_details_page.dart';
+import 'pages/trip_results_page.dart';
+import 'pages/trip_search_page.dart';
 import 'screens/auth/driver_login.dart';
 import 'screens/auth/driver_signup.dart';
 import 'screens/auth/user_login.dart';
@@ -52,6 +55,9 @@ class TakeKarApp extends StatelessWidget {
       initialRoute: SplashScreen.route,
       routes: {
         ReportProblemPage.route: (_) => const ReportProblemPage(),
+        TripSearchPage.route: (_) => const TripSearchPage(),
+        TripResultsPage.route: (_) => const TripResultsPage(),
+        TripDetailsPage.route: (_) => const TripDetailsPage(),
         SplashScreen.route: (_) => const SplashScreen(),
         RoleSelectionScreen.route: (_) => const RoleSelectionScreen(),
         UserLoginScreen.route: (_) => const UserLoginScreen(),

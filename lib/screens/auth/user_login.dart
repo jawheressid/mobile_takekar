@@ -57,11 +57,17 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
       }
 
       if (!mounted) return;
-      Navigator.of(context).pushNamedAndRemoveUntil(UserDashboardScreen.route, (route) => false);
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(UserDashboardScreen.route, (route) => false);
     } catch (e) {
       if (!mounted) return;
-      final message = (e is FirebaseAuthException) ? friendlyAuthErrorMessage(e) : friendlyRoleErrorMessage(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      final message = (e is FirebaseAuthException)
+          ? friendlyAuthErrorMessage(e)
+          : friendlyRoleErrorMessage(e);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -70,17 +76,23 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
   Future<void> _resetPassword() async {
     final email = _normalizedEmail();
     if (email.isEmpty || !email.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saisissez d’abord un email valide.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Saisissez d’abord un email valide.')),
+      );
       return;
     }
     try {
       await _auth.sendPasswordResetEmail(email: email);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email de réinitialisation envoyé.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email de réinitialisation envoyé.')),
+      );
     } catch (e) {
       if (!mounted) return;
       final message = friendlyAuthErrorMessage(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -124,8 +136,12 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                   },
                   validator: (value) {
                     final password = value ?? '';
-                    if (password.isEmpty) return 'Veuillez saisir votre mot de passe.';
-                    if (password.length < 6) return 'Mot de passe trop court.';
+                    if (password.isEmpty) {
+                      return 'Veuillez saisir votre mot de passe.';
+                    }
+                    if (password.length < 6) {
+                      return 'Mot de passe trop court.';
+                    }
                     return null;
                   },
                 ),
@@ -155,10 +171,18 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Pas encore de compte ? ', style: TextStyle(color: AppColors.textSecondary)),
+            const Text(
+              'Pas encore de compte ? ',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
             TextButton(
-              onPressed: _isSubmitting ? null : () => Navigator.of(context).pushNamed(UserSignupScreen.route),
-              style: TextButton.styleFrom(foregroundColor: AppColors.sunriseDeep),
+              onPressed: _isSubmitting
+                  ? null
+                  : () =>
+                        Navigator.of(context).pushNamed(UserSignupScreen.route),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.sunriseDeep,
+              ),
               child: const Text('S’inscrire'),
             ),
           ],
