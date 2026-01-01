@@ -35,4 +35,26 @@ class BusLocation {
       updatedAt: updatedAt is Timestamp ? updatedAt.toDate() : null,
     );
   }
+
+  // Parse une localisation depuis le payload RTDB (liveRuns).
+  static BusLocation? fromRealtimeMap(dynamic raw) {
+    if (raw is! Map) return null;
+
+    final lat = raw['lat'];
+    final lng = raw['lng'];
+    if (lat is! num || lng is! num) return null;
+
+    final speed = raw['speed'];
+    final updatedAt = raw['updatedAt'];
+    final updatedTime = updatedAt is num
+        ? DateTime.fromMillisecondsSinceEpoch(updatedAt.toInt())
+        : null;
+
+    return BusLocation(
+      latitude: lat.toDouble(),
+      longitude: lng.toDouble(),
+      speedKmh: speed is num ? speed.toDouble() : null,
+      updatedAt: updatedTime,
+    );
+  }
 }

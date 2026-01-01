@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 import '../models/bus_location.dart';
 
 class FollowLineService {
-  FollowLineService({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  FollowLineService({FirebaseFirestore? firestore, FirebaseDatabase? database})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _database = database ?? FirebaseDatabase.instance;
 
   final FirebaseFirestore _firestore;
+  final FirebaseDatabase _database;
 
   // Keep it simple: try Firestore, fallback to hardcoded lists.
   Future<List<String>> fetchLines() async {
@@ -43,23 +46,71 @@ class FollowLineService {
     return const ['Centre-ville', 'Nord', 'Sud'];
   }
 
-  String locationDocId({required String lineName, required String regionName}) {
-    final raw = '${lineName}_$regionName'.toLowerCase();
-    final normalized = raw
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
-        .replaceAll(RegExp(r'_+'), '_');
-    return normalized.replaceAll(RegExp(r'^_|_$'), '');
+  Future<String?> _fetchLineId({
+    required String lineName,
+    required String regionName,
+  }) async {
+    try {
+      final baseQuery = _firestore
+          .collection('lines')
+          .where('name', isEqualTo: lineName);
+
+      final trimmedRegion = regionName.trim();
+      if (trimmedRegion.isNotEmpty) {
+        final regional = await baseQuery
+            .where('regions', arrayContains: trimmedRegion)
+            .limit(1)
+            .get();
+        if (regional.docs.isNotEmpty) return regional.docs.first.id;
+      }
+
+      final snapshot = await baseQuery.limit(1).get();
+      if (snapshot.docs.isNotEmpty) return snapshot.docs.first.id;
+    } catch (_) {}
+    return null;
+  }
+
+  BusLocation? _latestFromLiveRuns(dynamic raw) {
+    if (raw is! Map) return null;
+
+    BusLocation? latest;
+    var latestMillis = -1;
+
+    // liveRuns contient plusieurs services actifs; on prend le plus récent.
+    for (final value in raw.values) {
+      final location = BusLocation.fromRealtimeMap(value);
+      if (location == null) continue;
+      final millis = location.updatedAt?.millisecondsSinceEpoch ?? 0;
+      if (millis >= latestMillis) {
+        latestMillis = millis;
+        latest = location;
+      }
+    }
+
+    return latest;
   }
 
   Stream<BusLocation?> watchBusLocation({
     required String lineName,
     required String regionName,
-  }) {
-    final id = locationDocId(lineName: lineName, regionName: regionName);
-    return _firestore
-        .collection('bus_locations')
-        .doc(id)
-        .snapshots()
-        .map(BusLocation.fromDoc);
+  }) async* {
+    final lineId = await _fetchLineId(
+      lineName: lineName,
+      regionName: regionName,
+    );
+    if (lineId == null) {
+      yield null;
+      return;
+    }
+
+    // Flux temps réel depuis RTDB (liveRuns).
+    final query = _database
+        .ref('liveRuns')
+        .orderByChild('lineId')
+        .equalTo(lineId);
+
+    await for (final event in query.onValue) {
+      yield _latestFromLiveRuns(event.snapshot.value);
+    }
   }
 }

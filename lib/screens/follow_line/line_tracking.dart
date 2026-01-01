@@ -63,6 +63,7 @@ class LineTrackingScreen extends StatelessWidget {
             ),
             Expanded(
               child: StreamBuilder<BusLocation?>(
+                // Flux temps réel pour la ligne sélectionnée.
                 stream: service.watchBusLocation(
                   lineName: lineName,
                   regionName: regionName,
