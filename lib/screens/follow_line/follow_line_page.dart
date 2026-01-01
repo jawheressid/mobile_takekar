@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../pages/report_problem_page.dart';
 import '../../services/driver_run_service.dart';
@@ -19,6 +22,12 @@ class _FollowLinePageState extends State<FollowLinePage> {
   bool _gpsReady = false;
   String? _gpsError;
   bool _stopping = false;
+  final MapController _mapController = MapController();
+  StreamSubscription<Position>? _positionSub;
+  LatLng? _currentPosition;
+  bool _mapReady = false;
+
+  static const double _mapZoom = 13;
 
   @override
   void initState() {
@@ -36,6 +45,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
         _gpsReady = true;
         _gpsError = null;
       });
+      _startMapUpdates();
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -43,6 +53,30 @@ class _FollowLinePageState extends State<FollowLinePage> {
         _gpsError = friendlyDriverRunErrorMessage(error);
       });
     }
+  }
+
+  void _startMapUpdates() {
+    _positionSub?.cancel();
+
+    // Suivi simple: on met à jour la carte à chaque nouvelle position GPS.
+    const settings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 5,
+    );
+
+    _positionSub = Geolocator.getPositionStream(
+      locationSettings: settings,
+    ).listen(
+      (position) {
+        final point = LatLng(position.latitude, position.longitude);
+        if (!mounted) return;
+        setState(() => _currentPosition = point);
+        if (_mapReady) {
+          _mapController.move(point, _mapZoom);
+        }
+      },
+      onError: (_) {},
+    );
   }
 
   Future<void> _finishService() async {
@@ -69,6 +103,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
   @override
   void dispose() {
     _tracker?.stop();
+    _positionSub?.cancel();
     super.dispose();
   }
 
@@ -78,6 +113,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
         ? 'GPS actif'
         : (_gpsError == null ? 'Activation GPS' : 'GPS arrêté');
     final statusColor = _gpsReady ? Colors.greenAccent : Colors.redAccent;
+    final mapPoint = _currentPosition ?? const LatLng(36.8065, 10.1815);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -189,9 +225,11 @@ class _FollowLinePageState extends State<FollowLinePage> {
               ),
               clipBehavior: Clip.hardEdge,
               child: FlutterMap(
+                mapController: _mapController,
                 options: MapOptions(
-                  initialCenter: LatLng(36.8065, 10.1815),
-                  initialZoom: 13,
+                  initialCenter: mapPoint,
+                  initialZoom: _mapZoom,
+                  onMapReady: () => _mapReady = true,
                 ),
                 children: [
                   TileLayer(
@@ -202,7 +240,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
                   MarkerLayer(
                     markers: [
                       Marker(
-                        point: LatLng(36.8065, 10.1815),
+                        point: mapPoint,
                         width: 50,
                         height: 50,
                         child: const Icon(
