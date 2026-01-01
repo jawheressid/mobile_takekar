@@ -35,7 +35,7 @@ class DriverRunService {
     final busRef = _firestore.collection('buses').doc(busId);
     final driverRef = _firestore.collection('drivers').doc(user.uid);
 
-    // Transaction: création du run + verrouillage bus/chauffeur.
+    // Transaction: crée le run et verrouille bus + chauffeur.
     await _firestore.runTransaction((tx) async {
       final busSnap = await tx.get(busRef);
       if (!busSnap.exists) {
@@ -49,17 +49,30 @@ class DriverRunService {
 
       final driverData = driverSnap.data() ?? <String, dynamic>{};
       final allowedBusIds = driverData['allowedBusIds'];
-      if (allowedBusIds is List && allowedBusIds.isNotEmpty) {
-        if (!allowedBusIds.contains(busId)) {
+      if (allowedBusIds is List) {
+        // Liste vide ou absente = pas d’accès.
+        if (allowedBusIds.isEmpty) {
           throw const DriverRunException(DriverRunError.busNotAllowed);
         }
+        final isAllowed = allowedBusIds.any((value) {
+          if (value is String) return value == busId;
+          if (value is num) return value.toString() == busId;
+          return false;
+        });
+        if (!isAllowed) {
+          throw const DriverRunException(DriverRunError.busNotAllowed);
+        }
+      } else {
+        throw const DriverRunException(DriverRunError.busNotAllowed);
       }
 
+      // Empêche un chauffeur d’avoir deux services actifs.
       final activeRunId = driverData['activeRunId'];
       if (activeRunId is String && activeRunId.isNotEmpty) {
         throw const DriverRunException(DriverRunError.driverAlreadyRunning);
       }
 
+      // Empêche un bus d’être démarré deux fois.
       final busData = busSnap.data() ?? <String, dynamic>{};
       final currentRunId = busData['currentRunId'];
       if (currentRunId is String && currentRunId.isNotEmpty) {
@@ -287,32 +300,32 @@ String friendlyDriverRunErrorMessage(Object error) {
   if (error is DriverRunException) {
     switch (error.error) {
       case DriverRunError.notSignedIn:
-        return 'Veuillez vous connecter pour démarrer le service.';
+        return 'Veuillez vous connecter.';
       case DriverRunError.lineNotFound:
-        return 'Ligne introuvable. Vérifiez la configuration.';
+        return 'Ligne n’existe pas.';
       case DriverRunError.lineInactive:
-        return 'Cette ligne est désactivée.';
+        return 'Ligne inactive.';
       case DriverRunError.busNotFound:
-        return 'Bus introuvable.';
+        return 'Bus n’existe pas.';
       case DriverRunError.busNotAllowed:
-        return 'Ce bus n’est pas autorisé pour ce chauffeur.';
+        return 'Chauffeur n’a pas accès à ce bus.';
       case DriverRunError.busAlreadyRunning:
-        return 'Ce bus est déjà en service.';
+        return 'Bus déjà en service.';
       case DriverRunError.driverNotFound:
         return 'Profil chauffeur introuvable.';
       case DriverRunError.driverAlreadyRunning:
-        return 'Vous avez déjà un service en cours.';
+        return 'Chauffeur déjà en service.';
     }
   }
 
   if (error is DriverLocationException) {
     switch (error.error) {
       case DriverLocationError.disabled:
-        return 'Activez la localisation pour démarrer le service.';
+        return 'Localisation désactivée.';
       case DriverLocationError.denied:
-        return 'Autorisez la localisation pour démarrer le service.';
+        return 'Localisation refusée.';
       case DriverLocationError.deniedForever:
-        return 'Activez la localisation dans les réglages.';
+        return 'Autorisez la localisation dans les réglages.';
     }
   }
 

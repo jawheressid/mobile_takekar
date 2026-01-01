@@ -197,7 +197,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
                   TileLayer(
                     urlTemplate:
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.example.app',
+                    userAgentPackageName: 'com.example.mon_app',
                   ),
                   MarkerLayer(
                     markers: [

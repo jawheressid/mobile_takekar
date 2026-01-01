@@ -94,7 +94,7 @@ class LineTrackingScreen extends StatelessWidget {
                                 TileLayer(
                                   urlTemplate:
                                       'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                  userAgentPackageName: 'com.takekar.app',
+                                  userAgentPackageName: 'com.example.mon_app',
                                 ),
                                 MarkerLayer(
                                   markers: [

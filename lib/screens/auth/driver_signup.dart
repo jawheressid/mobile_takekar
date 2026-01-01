@@ -70,6 +70,11 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
         driverCode: _driverCodeController.text.trim(),
         busNumber: _busNumberController.text.trim(),
       );
+      await _auth.upsertDriverProfile(
+        uid: uid,
+        name: fullName,
+        allowedBusIds: const <int>[],
+      );
 
       if (!mounted) return;
       Navigator.of(
