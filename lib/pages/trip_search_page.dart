@@ -13,14 +13,14 @@ class TripSearchPage extends StatefulWidget {
 }
 
 class _TripSearchPageState extends State<TripSearchPage> {
-  // Contrôleurs des champs "Départ" et "Arrivée"
+  // Controleurs des champs "Depart" et "Arrivee".
   final TextEditingController fromController = TextEditingController();
   final TextEditingController toController = TextEditingController();
 
-  // Exemple simple de recherches récentes (pas de stockage local pour l’instant).
+  // Exemple simple de recherches recentes (pas de stockage local pour l'instant).
   final List<(String from, String to)> recentSearches = [
-    ('Maison', 'Travail'),
-    ('Centre commercial', 'Université'),
+    ('Hammam Sousse', 'Manar Montplaisir'),
+    ('Sousse', 'Tunis'),
   ];
 
   bool get _canSearch =>
@@ -30,7 +30,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
   @override
   void initState() {
     super.initState();
-    // On rebuild quand l’utilisateur tape, pour activer/désactiver le bouton.
+    // Rebuild quand l'utilisateur tape, pour activer/desactiver le bouton.
     fromController.addListener(() => setState(() {}));
     toController.addListener(() => setState(() {}));
   }
@@ -43,14 +43,14 @@ class _TripSearchPageState extends State<TripSearchPage> {
   }
 
   void _search({String? from, String? to}) {
-    // On prend soit les valeurs passées (recherches récentes), soit celles des champs.
+    // On prend soit les valeurs passees (recherches recentes), soit celles des champs.
     final fromValue = (from ?? fromController.text).trim();
     final toValue = (to ?? toController.text).trim();
     if (fromValue.isEmpty || toValue.isEmpty) return;
 
     Navigator.of(context).pushNamed(
       TripResultsPage.route,
-      arguments: TripResultsArgs(from: fromValue, to: toValue),
+      arguments: TripResultsArgs(fromQuery: fromValue, toQuery: toValue),
     );
   }
 
@@ -61,7 +61,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header jaune comme l’image (avec retour).
+            // Header jaune comme l'image (avec retour).
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 26),
@@ -90,15 +90,13 @@ class _TripSearchPageState extends State<TripSearchPage> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    "Trouvez le meilleur itinéraire",
+                    'Trouvez le meilleur itineraire',
                     style: TextStyle(color: Colors.white70),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -107,11 +105,11 @@ class _TripSearchPageState extends State<TripSearchPage> {
                   children: [
                     // Formulaire
                     _LabeledField(
-                      label: 'Position de départ',
+                      label: 'Lieu de depart',
                       child: TextField(
                         controller: fromController,
                         decoration: InputDecoration(
-                          hintText: 'Ex: Place de la République',
+                          hintText: 'Ex: Hammam Sousse',
                           prefixIcon: const Icon(
                             Icons.place,
                             color: Colors.green,
@@ -127,11 +125,11 @@ class _TripSearchPageState extends State<TripSearchPage> {
                     ),
                     const SizedBox(height: 14),
                     _LabeledField(
-                      label: "Position d'arrivée",
+                      label: "Lieu d'arrivee",
                       child: TextField(
                         controller: toController,
                         decoration: InputDecoration(
-                          hintText: 'Ex: Gare centrale',
+                          hintText: 'Ex: Manar Montplaisir',
                           prefixIcon: const Icon(
                             Icons.place,
                             color: Colors.redAccent,
@@ -145,9 +143,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 18),
-
                     // Bouton de recherche
                     SizedBox(
                       width: double.infinity,
@@ -166,12 +162,9 @@ class _TripSearchPageState extends State<TripSearchPage> {
                         child: const Text('Chercher'),
                       ),
                     ),
-
                     const SizedBox(height: 22),
-
-                    // Recherches récentes (UI simple)
                     const Text(
-                      'Recherches récentes',
+                      'Recherches recentes',
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w600,

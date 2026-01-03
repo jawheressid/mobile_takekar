@@ -15,11 +15,14 @@ class TripDetailsPage extends StatelessWidget {
         ? args
         : const TripOption(
             lineName: 'Ligne',
+            direction: 0,
             isDirect: true,
             durationMinutes: 0,
             priceTnd: 0,
             distanceKm: 0,
             stops: 0,
+            fromStopName: 'Départ',
+            toStopName: 'Arrivée',
             nextDeparture: '--:--',
             departureTimes: [],
             path: [],
@@ -88,6 +91,33 @@ class TripDetailsPage extends StatelessWidget {
                         _Metric(
                           label: 'Distance',
                           value: '${trip.distanceKm.toStringAsFixed(1)} km',
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  _SectionTitle(
+                    icon: Icons.place_outlined,
+                    title: 'Trajet',
+                  ),
+                  const SizedBox(height: 10),
+                  _SectionCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${trip.fromStopName} → ${trip.toStopName}',
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          trip.isDirect ? 'Direct' : 'Avec correspondance',
+                          style: const TextStyle(color: AppColors.textSecondary),
                         ),
                       ],
                     ),

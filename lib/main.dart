@@ -1,4 +1,3 @@
-import 'pages/report_problem_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_core/firebase_core.dart';
@@ -8,6 +7,7 @@ import 'pages/trip_results_page.dart';
 import 'pages/trip_search_page.dart';
 import 'screens/auth/driver_login.dart';
 import 'screens/auth/driver_signup.dart';
+import 'pages/report_problem_page.dart';
 import 'screens/auth/user_login.dart';
 import 'screens/auth/user_signup.dart';
 import 'screens/driver_dashboard.dart';
