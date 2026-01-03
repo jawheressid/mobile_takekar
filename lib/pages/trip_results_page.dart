@@ -12,8 +12,6 @@ class TripResultsArgs {
   final String toQuery;
 }
 
-enum TripSort { price, duration }
-
 class TripResultsPage extends StatefulWidget {
   const TripResultsPage({super.key});
 
@@ -24,15 +22,57 @@ class TripResultsPage extends StatefulWidget {
 }
 
 class _TripResultsPageState extends State<TripResultsPage> {
-  TripSort sort = TripSort.price;
-
-  // Filtres simples demandés: prix & durée max.
-  double maxPriceTnd = 6.0;
+  // Filtre simple demande: duree max.
   double maxDurationMinutes = 60;
 
   final _searchService = TripSearchService();
   Future<List<TripOption>>? _resultsFuture;
   bool _didInit = false;
+
+  int _minutesUntil(TimeOfDay time) {
+    final now = TimeOfDay.now();
+    final nowMinutes = (now.hour * 60) + now.minute;
+    final targetMinutes = (time.hour * 60) + time.minute;
+    var diff = targetMinutes - nowMinutes;
+    if (diff < 0) {
+      diff += 24 * 60;
+    }
+    return diff;
+  }
+
+  TimeOfDay? _parseTime(String value) {
+    final trimmed = value.trim();
+    final parts = trimmed.split(':');
+    if (parts.length != 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+    return TimeOfDay(hour: hour, minute: minute);
+  }
+
+  int _waitMinutes(TripOption trip) {
+    final times = <TimeOfDay>[];
+    for (final value in trip.departureTimes) {
+      final parsed = _parseTime(value);
+      if (parsed != null) {
+        times.add(parsed);
+      }
+    }
+    if (times.isEmpty) {
+      final parsed = _parseTime(trip.nextDeparture);
+      if (parsed != null) {
+        times.add(parsed);
+      }
+    }
+    if (times.isEmpty) return 24 * 60;
+    var best = _minutesUntil(times.first);
+    for (final time in times.skip(1)) {
+      final diff = _minutesUntil(time);
+      if (diff < best) best = diff;
+    }
+    return best;
+  }
 
   @override
   void didChangeDependencies() {
@@ -103,18 +143,12 @@ class _TripResultsPageState extends State<TripResultsPage> {
                 allTrips
                     .where(
                       (t) =>
-                          t.priceTnd <= maxPriceTnd &&
                           t.durationMinutes <= maxDurationMinutes,
                     )
                     .toList()
-                  ..sort((a, b) {
-                    switch (sort) {
-                      case TripSort.price:
-                        return a.priceTnd.compareTo(b.priceTnd);
-                      case TripSort.duration:
-                        return a.durationMinutes.compareTo(b.durationMinutes);
-                    }
-                  });
+                  ..sort(
+                    (a, b) => _waitMinutes(a).compareTo(_waitMinutes(b)),
+                  );
 
             return Column(
               children: [
@@ -137,7 +171,7 @@ class _TripResultsPageState extends State<TripResultsPage> {
                       ),
                       const SizedBox(height: 6),
                       const Text(
-                        'Résultats',
+                        'Resultats',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 28,
@@ -146,7 +180,8 @@ class _TripResultsPageState extends State<TripResultsPage> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '${filteredTrips.length} trajets trouvés • ${typedArgs.fromQuery} → ${typedArgs.toQuery}',
+                        '${filteredTrips.length} trajets trouves - '
+                        '${typedArgs.fromQuery} -> ${typedArgs.toQuery}',
                         style: const TextStyle(color: Colors.white70),
                       ),
                     ],
@@ -172,47 +207,24 @@ class _TripResultsPageState extends State<TripResultsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          children: [
-                            const Text(
+                          children: const [
+                            Text(
                               'Trier par: ',
                               style: TextStyle(color: AppColors.textPrimary),
                             ),
-                            const SizedBox(width: 10),
-                            DropdownButton<TripSort>(
-                              value: sort,
-                              items: const [
-                                DropdownMenuItem(
-                                  value: TripSort.price,
-                                  child: Text('Prix'),
-                                ),
-                                DropdownMenuItem(
-                                  value: TripSort.duration,
-                                  child: Text('Durée'),
-                                ),
-                              ],
-                              onChanged: (value) {
-                                if (value == null) return;
-                                setState(() => sort = value);
-                              },
+                            SizedBox(width: 10),
+                            Text(
+                              "Temps d'attente",
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Prix max: ${maxPriceTnd.toStringAsFixed(1)} DT',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        Slider(
-                          value: maxPriceTnd,
-                          min: 1,
-                          max: 10,
-                          divisions: 18,
-                          onChanged: (v) => setState(() => maxPriceTnd = v),
-                        ),
-                        Text(
-                          'Durée max: ${maxDurationMinutes.round()} min',
+                          'Duree max: ${maxDurationMinutes.round()} min',
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                           ),
@@ -248,7 +260,7 @@ class _TripResultsPageState extends State<TripResultsPage> {
                       if (filteredTrips.isEmpty) {
                         return const Center(
                           child: Text(
-                            'Aucun trajet trouvé.',
+                            'Aucun trajet trouve.',
                             style: TextStyle(color: AppColors.textSecondary),
                           ),
                         );
@@ -358,10 +370,6 @@ class _TripCard extends StatelessWidget {
                     text: '${trip.durationMinutes} min',
                   ),
                   _InfoPill(
-                    icon: Icons.payments_outlined,
-                    text: '${trip.priceTnd.toStringAsFixed(2)} DT',
-                  ),
-                  _InfoPill(
                     icon: Icons.place_outlined,
                     text: '${trip.distanceKm.toStringAsFixed(1)} km',
                   ),
@@ -371,7 +379,8 @@ class _TripCard extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  '${trip.stops} arrêts • ${trip.fromStopName} → ${trip.toStopName}',
+                  '${trip.stops} arrets - ${trip.fromStopName} '
+                  '-> ${trip.toStopName}',
                   style: const TextStyle(color: AppColors.textSecondary),
                 ),
               ),

@@ -21,8 +21,8 @@ class TripDetailsPage extends StatelessWidget {
             priceTnd: 0,
             distanceKm: 0,
             stops: 0,
-            fromStopName: 'Départ',
-            toStopName: 'Arrivée',
+            fromStopName: 'Depart',
+            toStopName: 'Arrivee',
             nextDeparture: '--:--',
             departureTimes: [],
             path: [],
@@ -62,31 +62,25 @@ class TripDetailsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Détails du trajet',
+                    'Details du trajet',
                     style: TextStyle(color: Colors.white70),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 14),
-
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  // Résumé (durée / prix / distance)
+                  // Resume (duree / distance)
                   _SectionCard(
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         _Metric(
-                          label: 'Durée',
+                          label: 'Duree',
                           value: '${trip.durationMinutes} min',
-                        ),
-                        _Metric(
-                          label: 'Prix',
-                          value: '${trip.priceTnd.toStringAsFixed(2)} DT',
                         ),
                         _Metric(
                           label: 'Distance',
@@ -95,9 +89,7 @@ class TripDetailsPage extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
                   _SectionTitle(
                     icon: Icons.place_outlined,
                     title: 'Trajet',
@@ -108,7 +100,7 @@ class TripDetailsPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${trip.fromStopName} → ${trip.toStopName}',
+                          '${trip.fromStopName} -> ${trip.toStopName}',
                           style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w600,
@@ -122,9 +114,7 @@ class TripDetailsPage extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
                   // Horaires (chips)
                   const _SectionTitle(icon: Icons.schedule, title: 'Horaires'),
                   const SizedBox(height: 10),
@@ -156,13 +146,11 @@ class TripDetailsPage extends StatelessWidget {
                             ],
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
-                  // Arrêts (timeline simple)
+                  // Arrets (timeline simple)
                   _SectionTitle(
                     icon: Icons.pin_drop_outlined,
-                    title: 'Arrêts (${trip.path.length})',
+                    title: 'Arrets (${trip.path.length})',
                   ),
                   const SizedBox(height: 10),
                   _SectionCard(
@@ -178,13 +166,12 @@ class TripDetailsPage extends StatelessWidget {
                         ],
                         if (trip.path.isEmpty)
                           const Text(
-                            'Aucun arrêt',
+                            'Aucun arret',
                             style: TextStyle(color: AppColors.textSecondary),
                           ),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 24),
                 ],
               ),
