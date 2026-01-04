@@ -1,17 +1,27 @@
 import 'package:flutter/material.dart';
 
 import '../models/trip_option.dart';
+import '../services/trip_search_service.dart';
 import '../theme/app_colors.dart';
 import 'trip_details_page.dart';
 
 class TripResultsArgs {
-  const TripResultsArgs({required this.from, required this.to});
+  const TripResultsArgs({
+    required this.fromLabel,
+    required this.toLabel,
+    this.fromLat,
+    this.fromLng,
+    this.toLat,
+    this.toLng,
+  });
 
-  final String from;
-  final String to;
+  final String fromLabel;
+  final String toLabel;
+  final double? fromLat;
+  final double? fromLng;
+  final double? toLat;
+  final double? toLng;
 }
-
-enum TripSort { price, duration }
 
 class TripResultsPage extends StatefulWidget {
   const TripResultsPage({super.key});
@@ -23,175 +33,191 @@ class TripResultsPage extends StatefulWidget {
 }
 
 class _TripResultsPageState extends State<TripResultsPage> {
-  TripSort sort = TripSort.price;
+  final TripSearchService _service = TripSearchService();
+  TripResultsArgs _args =
+      const TripResultsArgs(fromLabel: 'Depart', toLabel: 'Arrivee');
+  Future<List<TripOption>>? _tripsFuture;
 
-  // Filtres simples demandés: prix & durée max.
-  double maxPriceTnd = 6.0;
-  double maxDurationMinutes = 60;
+  
+  double maxWaitMinutes = 45;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_tripsFuture != null) return;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    _args = args is TripResultsArgs
+        ? args
+        : const TripResultsArgs(fromLabel: 'Depart', toLabel: 'Arrivee');
+    debugPrint(
+      '[TripResults] init args from="${_args.fromLabel}" to="${_args.toLabel}" '
+      'fromLat=${_args.fromLat} fromLng=${_args.fromLng} '
+      'toLat=${_args.toLat} toLng=${_args.toLng}',
+    );
+    _tripsFuture = _service.searchTrips(
+      fromLabel: _args.fromLabel,
+      toLabel: _args.toLabel,
+      fromLat: _args.fromLat,
+      fromLng: _args.fromLng,
+      toLat: _args.toLat,
+      toLng: _args.toLng,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    final TripResultsArgs typedArgs = args is TripResultsArgs
-        ? args
-        : const TripResultsArgs(from: 'Départ', to: 'Arrivée');
-
-    // Données mock (exemple) — plus tard vous pouvez remplacer par un appel API/Firebase.
-    final allTrips = _mockTrips(from: typedArgs.from, to: typedArgs.to);
-
-    // Application des filtres.
-    final filteredTrips =
-        allTrips
-            .where(
-              (t) =>
-                  t.priceTnd <= maxPriceTnd &&
-                  t.durationMinutes <= maxDurationMinutes,
-            )
-            .toList()
-          ..sort((a, b) {
-            switch (sort) {
-              case TripSort.price:
-                return a.priceTnd.compareTo(b.priceTnd);
-              case TripSort.duration:
-                return a.durationMinutes.compareTo(b.durationMinutes);
-            }
-          });
-
+    final future = _tripsFuture;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header jaune "Résultats"
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(18, 14, 18, 22),
-              decoration: const BoxDecoration(
-                gradient: sunriseGradient,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(28),
-                  bottomRight: Radius.circular(28),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Résultats',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
+        child: FutureBuilder<List<TripOption>>(
+          future: future,
+          builder: (context, snapshot) {
+            final isLoading =
+                snapshot.connectionState != ConnectionState.done;
+            final hasError = snapshot.hasError;
+            final allTrips = snapshot.data ?? const <TripOption>[];
+            final List<TripOption> filteredTrips = hasError
+                ? <TripOption>[]
+                : allTrips
+                    .where((t) => t.durationMinutes <= maxWaitMinutes)
+                    .toList(growable: true);
+            debugPrint(
+              '[TripResults] build loading=$isLoading error=$hasError '
+              'trips=${allTrips.length} filtered=${filteredTrips.length}',
+            );
+            if (hasError) {
+              debugPrint('[TripResults] error: ${snapshot.error}');
+              debugPrint('[TripResults] stack: ${snapshot.stackTrace}');
+            }
+
+            final subtitle = isLoading
+                ? 'Recherche en cours...'
+                : '${filteredTrips.length} trajets trouvés • ${_args.fromLabel} → ${_args.toLabel}';
+
+            return Column(
+              children: [
+                
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 22),
+                  decoration: const BoxDecoration(
+                    gradient: sunriseGradient,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(28),
+                      bottomRight: Radius.circular(28),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${filteredTrips.length} trajets trouvés • ${typedArgs.from} → ${typedArgs.to}',
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Zone de filtres (simple)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x14000000),
-                      blurRadius: 10,
-                      offset: Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Text(
-                          'Trier par: ',
-                          style: TextStyle(color: AppColors.textPrimary),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Résultats',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
                         ),
-                        const SizedBox(width: 10),
-                        DropdownButton<TripSort>(
-                          value: sort,
-                          items: const [
-                            DropdownMenuItem(
-                              value: TripSort.price,
-                              child: Text('Prix'),
-                            ),
-                            DropdownMenuItem(
-                              value: TripSort.duration,
-                              child: Text('Durée'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            if (value == null) return;
-                            setState(() => sort = value);
-                          },
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x14000000),
+                          blurRadius: 10,
+                          offset: Offset(0, 8),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Prix max: ${maxPriceTnd.toStringAsFixed(1)} DT',
-                      style: const TextStyle(color: AppColors.textSecondary),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Temps d\'attente max: ${maxWaitMinutes.round()} min',
+                          style:
+                              const TextStyle(color: AppColors.textSecondary),
+                        ),
+                        Slider(
+                          value: maxWaitMinutes,
+                          min: 5,
+                          max: 120,
+                          divisions: 23,
+                          onChanged: (v) => setState(() => maxWaitMinutes = v),
+                        ),
+                      ],
                     ),
-                    Slider(
-                      value: maxPriceTnd,
-                      min: 1,
-                      max: 10,
-                      divisions: 18,
-                      onChanged: (v) => setState(() => maxPriceTnd = v),
-                    ),
-                    Text(
-                      'Durée max: ${maxDurationMinutes.round()} min',
-                      style: const TextStyle(color: AppColors.textSecondary),
-                    ),
-                    Slider(
-                      value: maxDurationMinutes,
-                      min: 10,
-                      max: 120,
-                      divisions: 22,
-                      onChanged: (v) => setState(() => maxDurationMinutes = v),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                itemCount: filteredTrips.length,
-                itemBuilder: (context, index) => _TripCard(
-                  trip: filteredTrips[index],
-                  onTap: () => Navigator.of(context).pushNamed(
-                    TripDetailsPage.route,
-                    arguments: filteredTrips[index],
                   ),
                 ),
-              ),
-            ),
-          ],
+
+                const SizedBox(height: 12),
+
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      if (isLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                      if (hasError) {
+                        return const Center(
+                          child: Text(
+                            'Erreur lors de la recherche.',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                        );
+                      }
+                      if (filteredTrips.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'Aucun trajet trouvé.',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        itemCount: filteredTrips.length,
+                        itemBuilder: (context, index) => _TripCard(
+                          trip: filteredTrips[index],
+                          onTap: () => Navigator.of(context).pushNamed(
+                            TripDetailsPage.route,
+                            arguments: filteredTrips[index],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -206,6 +232,7 @@ class _TripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final stopSequence = _buildStopSequence(trip);
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: InkWell(
@@ -277,16 +304,22 @@ class _TripCard extends StatelessWidget {
                     text: '${trip.durationMinutes} min',
                   ),
                   _InfoPill(
-                    icon: Icons.payments_outlined,
-                    text: '${trip.priceTnd.toStringAsFixed(2)} DT',
-                  ),
-                  _InfoPill(
                     icon: Icons.place_outlined,
                     text: '${trip.distanceKm.toStringAsFixed(1)} km',
                   ),
                 ],
               ),
               const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  stopSequence,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+              const SizedBox(height: 6),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -303,116 +336,37 @@ class _TripCard extends StatelessWidget {
 }
 
 class _InfoPill extends StatelessWidget {
-  const _InfoPill({required this.icon, required this.text});
+  const _InfoPill({this.icon, required this.text});
 
-  final IconData icon;
+  final IconData? icon;
   final String text;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.textSecondary),
-        const SizedBox(width: 6),
+        if (icon != null) ...[
+          Icon(icon, size: 18, color: AppColors.textSecondary),
+          const SizedBox(width: 6),
+        ],
         Text(text, style: const TextStyle(color: AppColors.textPrimary)),
       ],
     );
   }
 }
 
-List<TripOption> _mockTrips({required String from, required String to}) {
-  // Petit générateur "fake" : 3 trajets comme dans l’exemple.
-  // Vous pouvez remplacer ça plus tard par une logique réelle (API, DB, Firestore...).
-  return [
-    TripOption(
-      lineName: 'Ligne 3',
-      isDirect: true,
-      durationMinutes: 25,
-      priceTnd: 2.50,
-      distanceKm: 5.2,
-      stops: 4,
-      nextDeparture: '08:00',
-      departureTimes: const [
-        '08:00',
-        '08:30',
-        '09:00',
-        '09:30',
-        '10:00',
-        '10:30',
-        '11:00',
-      ],
-      path: [
-        TripStop(name: from, label: 'Départ', kind: TripStopKind.start),
-        const TripStop(
-          name: 'Rue Victor Hugo',
-          label: 'Arrêt 1',
-          kind: TripStopKind.middle,
-        ),
-        const TripStop(
-          name: 'Centre Commercial',
-          label: 'Arrêt 2',
-          kind: TripStopKind.middle,
-        ),
-        TripStop(name: to, label: 'Arrivée', kind: TripStopKind.end),
-      ],
-    ),
-    TripOption(
-      lineName: 'Ligne 7',
-      isDirect: true,
-      durationMinutes: 32,
-      priceTnd: 3.00,
-      distanceKm: 6.8,
-      stops: 5,
-      nextDeparture: '07:45',
-      departureTimes: const ['07:45', '08:15', '08:45', '09:15', '09:45'],
-      path: [
-        TripStop(name: from, label: 'Départ', kind: TripStopKind.start),
-        const TripStop(
-          name: 'Avenue Habib Bourguiba',
-          label: 'Arrêt 1',
-          kind: TripStopKind.middle,
-        ),
-        const TripStop(
-          name: 'Bab El Bhar',
-          label: 'Arrêt 2',
-          kind: TripStopKind.middle,
-        ),
-        const TripStop(
-          name: 'Rue de Marseille',
-          label: 'Arrêt 3',
-          kind: TripStopKind.middle,
-        ),
-        TripStop(name: to, label: 'Arrivée', kind: TripStopKind.end),
-      ],
-    ),
-    TripOption(
-      lineName: 'Ligne 12',
-      isDirect: true,
-      durationMinutes: 38,
-      priceTnd: 3.50,
-      distanceKm: 7.5,
-      stops: 5,
-      nextDeparture: '08:10',
-      departureTimes: const ['08:10', '08:40', '09:10', '09:40'],
-      path: [
-        TripStop(name: from, label: 'Départ', kind: TripStopKind.start),
-        const TripStop(
-          name: 'Station Lafayette',
-          label: 'Arrêt 1',
-          kind: TripStopKind.middle,
-        ),
-        const TripStop(
-          name: 'Bab Saadoun',
-          label: 'Arrêt 2',
-          kind: TripStopKind.middle,
-        ),
-        const TripStop(
-          name: 'Géant',
-          label: 'Arrêt 3',
-          kind: TripStopKind.middle,
-        ),
-        TripStop(name: to, label: 'Arrivée', kind: TripStopKind.end),
-      ],
-    ),
-  ];
+String _buildStopSequence(TripOption trip) {
+  if (trip.path.isEmpty) return 'Trajet';
+  final ordered = <String>[];
+  String? last;
+  for (final stop in trip.path) {
+    final name = stop.name.trim();
+    if (name.isEmpty) continue;
+    if (last == null || last.toLowerCase() != name.toLowerCase()) {
+      ordered.add(name);
+      last = name;
+    }
+  }
+  if (ordered.isEmpty) return 'Trajet';
+  return ordered.join(' \u2192 ');
 }

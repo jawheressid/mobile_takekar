@@ -16,6 +16,9 @@ class AuthService {
   DocumentReference<Map<String, dynamic>> userDoc(String uid) =>
       _firestore.collection('users').doc(uid);
 
+  DocumentReference<Map<String, dynamic>> driverDoc(String uid) =>
+      _firestore.collection('drivers').doc(uid);
+
   Future<void> upsertUserProfile({
     required String uid,
     required UserRole role,
@@ -41,6 +44,32 @@ class AuthService {
         });
       } else {
         tx.set(ref, base, SetOptions(merge: true));
+      }
+    });
+  }
+
+  Future<void> upsertDriverProfile({
+    required String uid,
+    required String name,
+    required List<int> allowedBusIds,
+  }) {
+    final data = <String, dynamic>{
+      'name': name,
+      'allowedBusIds': allowedBusIds,
+      'activeRunId': null,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    final ref = driverDoc(uid);
+    return _firestore.runTransaction((tx) async {
+      final snapshot = await tx.get(ref);
+      if (!snapshot.exists) {
+        tx.set(ref, <String, dynamic>{
+          ...data,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        tx.set(ref, data, SetOptions(merge: true));
       }
     });
   }
@@ -84,6 +113,14 @@ class AuthService {
   }
 
   Future<void> signOut() => _auth.signOut();
+}
+
+bool isValidEmail(String email) {
+  final trimmed = email.trim();
+  if (trimmed.isEmpty) return false;
+  final regex =
+      RegExp(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+  return regex.hasMatch(trimmed);
 }
 
 class MissingUserRoleException implements Exception {

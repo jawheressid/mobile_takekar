@@ -1,14 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 import '../models/bus_location.dart';
+import '../models/line_route.dart';
+import '../models/stop_location.dart';
 
 class FollowLineService {
-  FollowLineService({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  FollowLineService({FirebaseFirestore? firestore, FirebaseDatabase? database})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _database = database ?? FirebaseDatabase.instance;
 
   final FirebaseFirestore _firestore;
+  final FirebaseDatabase _database;
 
-  // Keep it simple: try Firestore, fallback to hardcoded lists.
+  
   Future<List<String>> fetchLines() async {
     try {
       final snapshot = await _firestore.collection('lines').get();
@@ -43,23 +48,134 @@ class FollowLineService {
     return const ['Centre-ville', 'Nord', 'Sud'];
   }
 
-  String locationDocId({required String lineName, required String regionName}) {
-    final raw = '${lineName}_$regionName'.toLowerCase();
-    final normalized = raw
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
-        .replaceAll(RegExp(r'_+'), '_');
-    return normalized.replaceAll(RegExp(r'^_|_$'), '');
+  Future<_LineInfo?> _fetchLineInfo({
+    required String lineName,
+    required String regionName,
+  }) async {
+    try {
+      final baseQuery = _firestore
+          .collection('lines')
+          .where('name', isEqualTo: lineName);
+
+      final trimmedRegion = regionName.trim();
+      if (trimmedRegion.isNotEmpty) {
+        final regional = await baseQuery
+            .where('regions', arrayContains: trimmedRegion)
+            .limit(1)
+            .get();
+        if (regional.docs.isNotEmpty) {
+          final doc = regional.docs.first;
+          return _LineInfo(
+            id: doc.id,
+            active: _isActive(doc.data()),
+          );
+        }
+      }
+
+      final snapshot = await baseQuery.limit(1).get();
+      if (snapshot.docs.isNotEmpty) {
+        final doc = snapshot.docs.first;
+        return _LineInfo(
+          id: doc.id,
+          active: _isActive(doc.data()),
+        );
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  bool _isActive(Map<String, dynamic> data) {
+    final active = data['active'];
+    return active is bool ? active : true;
+  }
+
+  BusLocation? _latestFromLiveRuns(dynamic raw) {
+    if (raw is! Map) return null;
+
+    BusLocation? latest;
+    var latestMillis = -1;
+
+    
+    for (final value in raw.values) {
+      final location = BusLocation.fromRealtimeMap(value);
+      if (location == null) continue;
+      final millis = location.updatedAt?.millisecondsSinceEpoch ?? 0;
+      if (millis >= latestMillis) {
+        latestMillis = millis;
+        latest = location;
+      }
+    }
+
+    return latest;
   }
 
   Stream<BusLocation?> watchBusLocation({
     required String lineName,
     required String regionName,
-  }) {
-    final id = locationDocId(lineName: lineName, regionName: regionName);
-    return _firestore
-        .collection('bus_locations')
-        .doc(id)
-        .snapshots()
-        .map(BusLocation.fromDoc);
+  }) async* {
+    final lineInfo = await _fetchLineInfo(
+      lineName: lineName,
+      regionName: regionName,
+    );
+    if (lineInfo == null) {
+      yield null;
+      return;
+    }
+
+    final fallbackStop =
+        lineInfo.active ? null : await _fallbackStopForLine(lineInfo.id);
+
+    
+    final query = _database
+        .ref('liveRuns')
+        .orderByChild('lineId')
+        .equalTo(lineInfo.id);
+
+    await for (final event in query.onValue) {
+      final live = _latestFromLiveRuns(event.snapshot.value);
+      if (live != null) {
+        yield live;
+        continue;
+      }
+      if (fallbackStop != null) {
+        yield BusLocation(
+          latitude: fallbackStop.latitude,
+          longitude: fallbackStop.longitude,
+          speedKmh: 0,
+          updatedAt: DateTime.now(),
+        );
+      } else {
+        yield null;
+      }
+    }
   }
+
+  Future<StopLocation?> _fallbackStopForLine(String lineId) async {
+    try {
+      final routeSnapshot = await _firestore
+          .collection('line_routes')
+          .where('lineId', isEqualTo: lineId)
+          .limit(1)
+          .get();
+      if (routeSnapshot.docs.isEmpty) return null;
+
+      final route = LineRoute.fromDoc(
+        routeSnapshot.docs.first.id,
+        routeSnapshot.docs.first.data(),
+      );
+      if (route == null || route.stopIds.isEmpty) return null;
+
+      final stopSnapshot =
+          await _firestore.collection('stops').doc(route.stopIds.first).get();
+      return StopLocation.fromDoc(stopSnapshot);
+    } catch (_) {}
+    return null;
+  }
+}
+
+class _LineInfo {
+  const _LineInfo({required this.id, required this.active});
+
+  final String id;
+  final bool active;
 }

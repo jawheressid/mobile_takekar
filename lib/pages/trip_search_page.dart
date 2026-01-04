@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../theme/app_colors.dart';
 import 'trip_results_page.dart';
@@ -13,24 +14,35 @@ class TripSearchPage extends StatefulWidget {
 }
 
 class _TripSearchPageState extends State<TripSearchPage> {
-  // Contrôleurs des champs "Départ" et "Arrivée"
+  
   final TextEditingController fromController = TextEditingController();
   final TextEditingController toController = TextEditingController();
 
-  // Exemple simple de recherches récentes (pas de stockage local pour l’instant).
+  Position? _fromPosition;
+  Position? _toPosition;
+  bool _useFromLocation = false;
+  bool _useToLocation = false;
+  bool _fetchingFromLocation = false;
+  bool _fetchingToLocation = false;
+
+  
   final List<(String from, String to)> recentSearches = [
     ('Maison', 'Travail'),
     ('Centre commercial', 'Université'),
   ];
 
   bool get _canSearch =>
-      fromController.text.trim().isNotEmpty &&
-      toController.text.trim().isNotEmpty;
+      (_useFromLocation
+          ? _fromPosition != null
+          : fromController.text.trim().isNotEmpty) &&
+      (_useToLocation
+          ? _toPosition != null
+          : toController.text.trim().isNotEmpty);
 
   @override
   void initState() {
     super.initState();
-    // On rebuild quand l’utilisateur tape, pour activer/désactiver le bouton.
+    
     fromController.addListener(() => setState(() {}));
     toController.addListener(() => setState(() {}));
   }
@@ -43,15 +55,104 @@ class _TripSearchPageState extends State<TripSearchPage> {
   }
 
   void _search({String? from, String? to}) {
-    // On prend soit les valeurs passées (recherches récentes), soit celles des champs.
-    final fromValue = (from ?? fromController.text).trim();
-    final toValue = (to ?? toController.text).trim();
+    
+    final useFromLocation = from == null && _useFromLocation;
+    final useToLocation = to == null && _useToLocation;
+    final fromValue = useFromLocation
+        ? 'Ma position'
+        : (from ?? fromController.text).trim();
+    final toValue =
+        useToLocation ? 'Ma position' : (to ?? toController.text).trim();
     if (fromValue.isEmpty || toValue.isEmpty) return;
 
     Navigator.of(context).pushNamed(
       TripResultsPage.route,
-      arguments: TripResultsArgs(from: fromValue, to: toValue),
+      arguments: TripResultsArgs(
+        fromLabel: fromValue,
+        toLabel: toValue,
+        fromLat: useFromLocation ? _fromPosition?.latitude : null,
+        fromLng: useFromLocation ? _fromPosition?.longitude : null,
+        toLat: useToLocation ? _toPosition?.latitude : null,
+        toLng: useToLocation ? _toPosition?.longitude : null,
+      ),
     );
+  }
+
+  Future<Position?> _resolveCurrentPosition() async {
+    try {
+      final enabled = await Geolocator.isLocationServiceEnabled();
+      if (!enabled) {
+        _showSnackBar('Activez la localisation.');
+        return null;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied) {
+        _showSnackBar('Localisation refusee.');
+        return null;
+      }
+      if (permission == LocationPermission.deniedForever) {
+        _showSnackBar('Autorisez la localisation dans les reglages.');
+        return null;
+      }
+      return Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+    } catch (_) {
+      _showSnackBar('Impossible de recuperer la position.');
+      return null;
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  Future<void> _setFromLocation() async {
+    if (_fetchingFromLocation) return;
+    setState(() => _fetchingFromLocation = true);
+    final position = await _resolveCurrentPosition();
+    if (!mounted) return;
+    if (position != null) {
+      setState(() {
+        _fromPosition = position;
+        _useFromLocation = true;
+      });
+    }
+    setState(() => _fetchingFromLocation = false);
+  }
+
+  Future<void> _setToLocation() async {
+    if (_fetchingToLocation) return;
+    setState(() => _fetchingToLocation = true);
+    final position = await _resolveCurrentPosition();
+    if (!mounted) return;
+    if (position != null) {
+      setState(() {
+        _toPosition = position;
+        _useToLocation = true;
+      });
+    }
+    setState(() => _fetchingToLocation = false);
+  }
+
+  void _clearFromLocation() {
+    setState(() {
+      _useFromLocation = false;
+      _fromPosition = null;
+    });
+  }
+
+  void _clearToLocation() {
+    setState(() {
+      _useToLocation = false;
+      _toPosition = null;
+    });
   }
 
   @override
@@ -61,7 +162,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header jaune comme l’image (avec retour).
+            
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 26),
@@ -105,17 +206,41 @@ class _TripSearchPageState extends State<TripSearchPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Formulaire
+                    
                     _LabeledField(
                       label: 'Position de départ',
                       child: TextField(
                         controller: fromController,
+                        enabled: !_useFromLocation,
                         decoration: InputDecoration(
-                          hintText: 'Ex: Place de la République',
+                          hintText: _useFromLocation
+                              ? 'Ma position'
+                              : 'Ex: Place de la République',
                           prefixIcon: const Icon(
                             Icons.place,
                             color: Colors.green,
                           ),
+                          suffixIcon: _fetchingFromLocation
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : IconButton(
+                                  onPressed: _useFromLocation
+                                      ? _clearFromLocation
+                                      : _setFromLocation,
+                                  icon: Icon(
+                                    _useFromLocation
+                                        ? Icons.close
+                                        : Icons.my_location,
+                                  ),
+                                ),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -130,12 +255,36 @@ class _TripSearchPageState extends State<TripSearchPage> {
                       label: "Position d'arrivée",
                       child: TextField(
                         controller: toController,
+                        enabled: !_useToLocation,
                         decoration: InputDecoration(
-                          hintText: 'Ex: Gare centrale',
+                          hintText: _useToLocation
+                              ? 'Ma position'
+                              : 'Ex: Gare centrale',
                           prefixIcon: const Icon(
                             Icons.place,
                             color: Colors.redAccent,
                           ),
+                          suffixIcon: _fetchingToLocation
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : IconButton(
+                                  onPressed: _useToLocation
+                                      ? _clearToLocation
+                                      : _setToLocation,
+                                  icon: Icon(
+                                    _useToLocation
+                                        ? Icons.close
+                                        : Icons.my_location,
+                                  ),
+                                ),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -148,7 +297,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
 
                     const SizedBox(height: 18),
 
-                    // Bouton de recherche
+                    
                     SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -169,7 +318,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
 
                     const SizedBox(height: 22),
 
-                    // Recherches récentes (UI simple)
+                    
                     const Text(
                       'Recherches récentes',
                       style: TextStyle(

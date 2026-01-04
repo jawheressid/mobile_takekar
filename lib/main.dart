@@ -21,7 +21,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Object? firebaseInitError;
   try {
-    // NOTE: On Web, Firebase needs explicit config (via --dart-define) otherwise FirebaseAuth/Firestore will crash.
+    
     await Firebase.initializeApp(
       options: kIsWeb ? _webFirebaseOptions() : null,
     );

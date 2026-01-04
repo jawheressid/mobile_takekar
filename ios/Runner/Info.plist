@@ -41,6 +41,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>La localisation est nécessaire pour partager la position du bus.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>La localisation est nécessaire pour partager la position du bus.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

@@ -6,6 +6,8 @@ import '../widgets/cards.dart';
 import 'follow_line/follow_line_page.dart';
 import 'role_selection.dart';
 import '../services/auth_service.dart';
+import '../services/driver_run_service.dart';
+import '../services/follow_line_service.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
   const DriverDashboardScreen({super.key});
@@ -16,10 +18,19 @@ class DriverDashboardScreen extends StatefulWidget {
 }
 
 class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
-  final List<String> lines = ['Ligne 1', 'Ligne 2', 'Ligne 3'];
+  final _lineService = FollowLineService();
+  late Future<List<String>> _linesFuture;
   String? selectedLine;
   final _formKey = GlobalKey<FormState>();
   final _busIdController = TextEditingController();
+  final _runService = DriverRunService();
+  bool _starting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _linesFuture = _lineService.fetchLines();
+  }
 
   @override
   void dispose() {
@@ -27,7 +38,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
     super.dispose();
   }
 
-  void _startService() {
+  Future<void> _startService() async {
     FocusScope.of(context).unfocus();
 
     final valid = _formKey.currentState?.validate() ?? false;
@@ -40,12 +51,27 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
     }
 
     final busId = _busIdController.text.trim();
+    setState(() => _starting = true);
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => FollowLinePage(lineName: selectedLine!, busId: busId),
-      ),
-    );
+    try {
+      final run = await _runService.startService(
+        busId: busId,
+        lineName: selectedLine!,
+      );
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => FollowLinePage(run: run)),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(friendlyDriverRunErrorMessage(error))),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _starting = false);
+      }
+    }
   }
 
   @override
@@ -119,45 +145,56 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x1AFBC02D),
-                              blurRadius: 10,
-                              offset: Offset(0, 8),
+                      FutureBuilder<List<String>>(
+                        future: _linesFuture,
+                        builder: (context, snapshot) {
+                          final lines = snapshot.data ?? const <String>[];
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 2,
                             ),
-                          ],
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: selectedLine,
-                            hint: const Text('Sélectionnez votre ligne'),
-                            isExpanded: true,
-                            borderRadius: BorderRadius.circular(14),
-                            items: lines
-                                .map(
-                                  (e) => DropdownMenuItem(
-                                    value: e,
-                                    child: Text(e),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (value) =>
-                                setState(() => selectedLine = value),
-                          ),
-                        ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x1AFBC02D),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: selectedLine,
+                                hint: const Text('Sélectionnez votre ligne'),
+                                isExpanded: true,
+                                borderRadius: BorderRadius.circular(14),
+                                items: lines
+                                    .map(
+                                      (e) => DropdownMenuItem(
+                                        value: e,
+                                        child: Text(e),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: lines.isEmpty
+                                    ? null
+                                    : (value) => setState(
+                                          () => selectedLine = value,
+                                        ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 16),
                       PrimaryButton(
-                        label: 'Commencer le service',
-                        onPressed: _startService,
+                        label: _starting
+                            ? 'Démarrage...'
+                            : 'Commencer le service',
+                        onPressed: _starting ? null : _startService,
                       ),
                       const SizedBox(height: 22),
                       Row(

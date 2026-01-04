@@ -2,7 +2,7 @@ class TripStop {
   const TripStop({required this.name, required this.label, required this.kind});
 
   final String name;
-  final String label; // Exemple: "Départ", "Arrêt 1", "Arrivée"
+  final String label; 
   final TripStopKind kind;
 }
 
@@ -21,13 +21,13 @@ class TripOption {
     required this.path,
   });
 
-  final String lineName; // Exemple: "Ligne 3"
+  final String lineName; 
   final bool isDirect;
   final int durationMinutes;
   final double priceTnd;
   final double distanceKm;
   final int stops;
-  final String nextDeparture; // Exemple: "08:00"
+  final String nextDeparture; 
   final List<String> departureTimes;
   final List<TripStop> path;
 }

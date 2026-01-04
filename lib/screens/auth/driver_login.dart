@@ -52,6 +52,20 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
         throw Exception('Missing uid');
       }
 
+      if (!(credential.user?.emailVerified ?? false)) {
+        await credential.user?.sendEmailVerification();
+        await _auth.signOut();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Email non verifie. Verifiez votre boite mail.',
+            ),
+          ),
+        );
+        return;
+      }
+
       final role = await requireUserRole(_auth, uid);
       if (role != UserRole.driver) {
         await _auth.signOut();
@@ -106,7 +120,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                   validator: (value) {
                     final email = (value ?? '').trim();
                     if (email.isEmpty) return 'Veuillez saisir votre email.';
-                    if (!email.contains('@')) return 'Email invalide.';
+                    if (!isValidEmail(email)) return 'Email invalide.';
                     return null;
                   },
                 ),

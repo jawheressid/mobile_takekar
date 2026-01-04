@@ -1,28 +1,125 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../pages/report_problem_page.dart';
+import '../../services/driver_run_service.dart';
 
-class FollowLinePage extends StatelessWidget {
-  const FollowLinePage({
-    super.key,
-    required this.lineName,
-    required this.busId,
-  });
+class FollowLinePage extends StatefulWidget {
+  const FollowLinePage({super.key, required this.run});
 
-  // La ligne choisie par le chauffeur (ex: "Ligne 3").
-  final String lineName;
+  final DriverRun run;
 
-  // Identifiant du bus (ex: "BUS-2025-001").
-  final String busId;
+  @override
+  State<FollowLinePage> createState() => _FollowLinePageState();
+}
+
+class _FollowLinePageState extends State<FollowLinePage> {
+  final DriverRunService _service = DriverRunService();
+  DriverRunTracker? _tracker;
+  bool _gpsReady = false;
+  String? _gpsError;
+  bool _stopping = false;
+  final MapController _mapController = MapController();
+  StreamSubscription<Position>? _positionSub;
+  LatLng? _currentPosition;
+  bool _mapReady = false;
+
+  static const double _mapZoom = 13;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTracking();
+  }
+
+  Future<void> _startTracking() async {
+    try {
+      final tracker = DriverRunTracker(service: _service, run: widget.run);
+      await tracker.start();
+      if (!mounted) return;
+      setState(() {
+        _tracker = tracker;
+        _gpsReady = true;
+        _gpsError = null;
+      });
+      _startMapUpdates();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _gpsReady = false;
+        _gpsError = friendlyDriverRunErrorMessage(error);
+      });
+    }
+  }
+
+  void _startMapUpdates() {
+    _positionSub?.cancel();
+
+    
+    const settings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 5,
+    );
+
+    _positionSub = Geolocator.getPositionStream(
+      locationSettings: settings,
+    ).listen(
+      (position) {
+        final point = LatLng(position.latitude, position.longitude);
+        if (!mounted) return;
+        setState(() => _currentPosition = point);
+        if (_mapReady) {
+          _mapController.move(point, _mapZoom);
+        }
+      },
+      onError: (_) {},
+    );
+  }
+
+  Future<void> _finishService() async {
+    if (_stopping) return;
+    setState(() => _stopping = true);
+
+    try {
+      await _tracker?.stop();
+      await _service.stopService(widget.run);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(friendlyDriverRunErrorMessage(error))),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _stopping = false);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _tracker?.stop();
+    _positionSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final statusLabel = _gpsReady
+        ? 'GPS actif'
+        : (_gpsError == null ? 'Activation GPS' : 'GPS arrêté');
+    final statusColor = _gpsReady ? Colors.greenAccent : Colors.redAccent;
+    final mapPoint = _currentPosition ?? const LatLng(36.8065, 10.1815);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
-          // HEADER: infos de service (ligne + bus + statut).
+          
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
@@ -40,7 +137,7 @@ class FollowLinePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      lineName,
+                      widget.run.lineName,
                       style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
@@ -48,11 +145,14 @@ class FollowLinePage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(busId, style: const TextStyle(color: Colors.white70)),
+                    Text(
+                      widget.run.busId,
+                      style: const TextStyle(color: Colors.white70),
+                    ),
                   ],
                 ),
 
-                // Badge d'état (pour l'instant: toujours "En service").
+                
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -63,10 +163,13 @@ class FollowLinePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
-                    children: const [
-                      Icon(Icons.circle, color: Colors.greenAccent, size: 10),
-                      SizedBox(width: 6),
-                      Text('En service', style: TextStyle(color: Colors.white)),
+                    children: [
+                      Icon(Icons.circle, color: statusColor, size: 10),
+                      const SizedBox(width: 6),
+                      Text(
+                        statusLabel,
+                        style: const TextStyle(color: Colors.white),
+                      ),
                     ],
                   ),
                 ),
@@ -76,7 +179,40 @@ class FollowLinePage extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // CARTE: exemple simple avec un marker statique.
+          if (_gpsError != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 8),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.gps_off, color: Colors.redAccent),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _gpsError!,
+                        style: const TextStyle(color: Colors.black87),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _startTracking,
+                      child: const Text('Réessayer'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          if (_gpsError != null) const SizedBox(height: 16),
+
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
@@ -89,20 +225,22 @@ class FollowLinePage extends StatelessWidget {
               ),
               clipBehavior: Clip.hardEdge,
               child: FlutterMap(
+                mapController: _mapController,
                 options: MapOptions(
-                  initialCenter: LatLng(36.8065, 10.1815),
-                  initialZoom: 13,
+                  initialCenter: mapPoint,
+                  initialZoom: _mapZoom,
+                  onMapReady: () => _mapReady = true,
                 ),
                 children: [
                   TileLayer(
                     urlTemplate:
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.example.app',
+                    userAgentPackageName: 'com.example.mon_app',
                   ),
                   MarkerLayer(
                     markers: [
                       Marker(
-                        point: LatLng(36.8065, 10.1815),
+                        point: mapPoint,
                         width: 50,
                         height: 50,
                         child: const Icon(
@@ -120,7 +258,7 @@ class FollowLinePage extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // ACTIONS: boutons placeholder (non branchés pour l'instant).
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -163,13 +301,13 @@ class FollowLinePage extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // FIN DU SERVICE: pour l'instant on revient simplement à l'écran précédent.
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: _stopping ? null : _finishService,
                 icon: const Icon(Icons.stop_circle),
                 label: const Text('Finir le trajet'),
                 style: ElevatedButton.styleFrom(
