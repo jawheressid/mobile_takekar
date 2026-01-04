@@ -14,7 +14,7 @@ class TripSearchPage extends StatefulWidget {
 }
 
 class _TripSearchPageState extends State<TripSearchPage> {
-  // Contrôleurs des champs "Départ" et "Arrivée"
+  
   final TextEditingController fromController = TextEditingController();
   final TextEditingController toController = TextEditingController();
 
@@ -25,7 +25,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
   bool _fetchingFromLocation = false;
   bool _fetchingToLocation = false;
 
-  // Exemple simple de recherches récentes (pas de stockage local pour l’instant).
+  
   final List<(String from, String to)> recentSearches = [
     ('Maison', 'Travail'),
     ('Centre commercial', 'Université'),
@@ -42,7 +42,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
   @override
   void initState() {
     super.initState();
-    // On rebuild quand l’utilisateur tape, pour activer/désactiver le bouton.
+    
     fromController.addListener(() => setState(() {}));
     toController.addListener(() => setState(() {}));
   }
@@ -55,7 +55,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
   }
 
   void _search({String? from, String? to}) {
-    // On prend soit les valeurs passées (recherches récentes), soit celles des champs.
+    
     final useFromLocation = from == null && _useFromLocation;
     final useToLocation = to == null && _useToLocation;
     final fromValue = useFromLocation
@@ -162,7 +162,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header jaune comme l’image (avec retour).
+            
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 26),
@@ -206,7 +206,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Formulaire
+                    
                     _LabeledField(
                       label: 'Position de départ',
                       child: TextField(
@@ -297,7 +297,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
 
                     const SizedBox(height: 18),
 
-                    // Bouton de recherche
+                    
                     SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -318,7 +318,7 @@ class _TripSearchPageState extends State<TripSearchPage> {
 
                     const SizedBox(height: 22),
 
-                    // Recherches récentes (UI simple)
+                    
                     const Text(
                       'Recherches récentes',
                       style: TextStyle(

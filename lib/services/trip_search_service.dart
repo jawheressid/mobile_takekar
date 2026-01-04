@@ -72,6 +72,10 @@ class TripSearchService {
       return const [];
     }
 
+    final stopLookup = await fetchStopsByIds({
+      for (final route in routes) ...route.stopIds,
+    });
+
     final fromWalkKm = fromNearest == null
         ? null
         : {fromNearest.stop.id: fromNearest.distanceKm};
@@ -82,8 +86,7 @@ class TripSearchService {
       routes: routes,
       fromStops: fromStops,
       toStops: toStops,
-      fromLabel: fromLabel,
-      toLabel: toLabel,
+      stopLookup: stopLookup,
       fromWalkKmByStopId: fromWalkKm,
       toWalkKmByStopId: toWalkKm,
     );
@@ -91,8 +94,7 @@ class TripSearchService {
       routes: routes,
       fromStops: fromStops,
       toStops: toStops,
-      fromLabel: fromLabel,
-      toLabel: toLabel,
+      stopLookup: stopLookup,
       fromWalkKmByStopId: fromWalkKm,
       toWalkKmByStopId: toWalkKm,
     );
@@ -224,12 +226,43 @@ class TripSearchService {
         .toList();
   }
 
+  Future<Map<String, StopLocation>> fetchStopsByIds(
+    Set<String> stopIds,
+  ) async {
+    if (stopIds.isEmpty) return const {};
+
+    const chunkSize = 10;
+    final trimmed = stopIds
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toList();
+    final result = <String, StopLocation>{};
+
+    for (int i = 0; i < trimmed.length; i += chunkSize) {
+      final chunk = trimmed.sublist(
+        i,
+        min(i + chunkSize, trimmed.length),
+      );
+      final snapshot = await _firestore
+          .collection('stops')
+          .where(FieldPath.documentId, whereIn: chunk)
+          .get();
+      for (final doc in snapshot.docs) {
+        final stop = StopLocation.fromDoc(doc);
+        if (stop != null) {
+          result[stop.id] = stop;
+        }
+      }
+    }
+
+    return result;
+  }
+
   List<TripOption> buildDirectTrips({
     required List<LineRoute> routes,
     required List<StopLocation> fromStops,
     required List<StopLocation> toStops,
-    required String fromLabel,
-    required String toLabel,
+    required Map<String, StopLocation> stopLookup,
     Map<String, double>? fromWalkKmByStopId,
     Map<String, double>? toWalkKmByStopId,
   }) {
@@ -248,6 +281,9 @@ class TripSearchService {
         for (final toEntry in toLookup.entries) {
           final toIndex = route.stopIds.indexOf(toEntry.key);
           if (toIndex == -1 || toIndex <= fromIndex) continue;
+          final segmentStopIds =
+              route.stopIds.sublist(fromIndex, toIndex + 1);
+          if (segmentStopIds.length < 2) continue;
           final stopCount = toIndex - fromIndex;
           final walkFromKm = fromWalkKmByStopId?[fromEntry.key] ?? 0;
           final walkToKm = toWalkKmByStopId?[toEntry.key] ?? 0;
@@ -267,12 +303,10 @@ class TripSearchService {
               nextDeparture: '--',
               departureTimes: const [],
               path: _buildDirectPath(
-                fromLabel: fromLabel,
-                toLabel: toLabel,
+                stopIds: segmentStopIds,
+                stopLookup: stopLookup,
                 fromStopName: fromEntry.value.name,
                 toStopName: toEntry.value.name,
-                lineName: route.lineName,
-                stopCount: stopCount,
               ),
             ),
           );
@@ -288,8 +322,7 @@ class TripSearchService {
     required List<LineRoute> routes,
     required List<StopLocation> fromStops,
     required List<StopLocation> toStops,
-    required String fromLabel,
-    required String toLabel,
+    required Map<String, StopLocation> stopLookup,
     Map<String, double>? fromWalkKmByStopId,
     Map<String, double>? toWalkKmByStopId,
   }) {
@@ -319,6 +352,13 @@ class TripSearchService {
               continue;
             }
 
+            final segmentAStopIds =
+                routeA.stopIds.sublist(fromIndex, transferIndexA + 1);
+            final segmentBStopIds =
+                routeB.stopIds.sublist(transferIndexB, toIndex + 1);
+            if (segmentAStopIds.length < 2 || segmentBStopIds.length < 2) {
+              continue;
+            }
             final stopCount =
                 (transferIndexA - fromIndex) + (toIndex - transferIndexB);
             final walkFromKm = fromWalkKmByStopId?[fromEntry.key] ?? 0;
@@ -335,21 +375,20 @@ class TripSearchService {
                 durationMinutes: busMinutes + walkMinutes + 5,
                 priceTnd: max(1.5, stopCount * 0.5),
                 distanceKm: totalKm,
-                stops: stopCount,
-                nextDeparture: '--',
-                departureTimes: const [],
-                path: _buildTransferPath(
-                  fromLabel: fromLabel,
-                  toLabel: toLabel,
-                  fromStopName: fromEntry.value.name,
-                  toStopName: toEntry.value.name,
-                  lineA: routeA.lineName,
-                  lineB: routeB.lineName,
-                  stopCount: stopCount,
-                ),
+              stops: stopCount,
+              nextDeparture: '--',
+              departureTimes: const [],
+              path: _buildTransferPath(
+                segmentAStopIds: segmentAStopIds,
+                segmentBStopIds: segmentBStopIds,
+                stopLookup: stopLookup,
+                fromStopName: fromEntry.value.name,
+                toStopName: toEntry.value.name,
+                lineB: routeB.lineName,
               ),
-            );
-          }
+            ),
+          );
+        }
         }
       }
     }
@@ -367,96 +406,129 @@ class TripSearchService {
   }
 
   List<TripStop> _buildDirectPath({
-    required String fromLabel,
-    required String toLabel,
+    required List<String> stopIds,
+    required Map<String, StopLocation> stopLookup,
     required String fromStopName,
     required String toStopName,
-    required String lineName,
-    required int stopCount,
   }) {
-    final walkToStop = _isSamePlace(fromLabel, fromStopName)
-        ? 'Arret de depart'
-        : 'Marche jusqu\'a $fromStopName';
-    final walkToDestination = _isSamePlace(toLabel, toStopName)
-        ? 'Arret d\'arrivee'
-        : 'Marche jusqu\'a destination';
-
-    return [
-      TripStop(
-        name: fromLabel,
-        label: walkToStop,
-        kind: TripStopKind.start,
-      ),
-      TripStop(
-        name: fromStopName,
-        label: '$lineName \u2022 $stopCount arrets',
-        kind: TripStopKind.middle,
-      ),
-      TripStop(
-        name: toStopName,
-        label: 'Descendre du bus',
-        kind: TripStopKind.middle,
-      ),
-      TripStop(
-        name: toLabel,
-        label: walkToDestination,
-        kind: TripStopKind.end,
-      ),
-    ];
+    return _buildSegmentStops(
+      stopIds: stopIds,
+      stopLookup: stopLookup,
+      firstLabel: 'Arret de depart',
+      lastLabel: 'Arret d\'arrivee',
+      firstKind: TripStopKind.start,
+      lastKind: TripStopKind.end,
+      firstFallbackName: fromStopName,
+      lastFallbackName: toStopName,
+    );
   }
 
   List<TripStop> _buildTransferPath({
-    required String fromLabel,
-    required String toLabel,
+    required List<String> segmentAStopIds,
+    required List<String> segmentBStopIds,
+    required Map<String, StopLocation> stopLookup,
     required String fromStopName,
     required String toStopName,
-    required String lineA,
     required String lineB,
-    required int stopCount,
   }) {
-    final walkToStop = _isSamePlace(fromLabel, fromStopName)
-        ? 'Arret de depart'
-        : 'Marche jusqu\'a $fromStopName';
-    final walkToDestination = _isSamePlace(toLabel, toStopName)
-        ? 'Arret d\'arrivee'
-        : 'Marche jusqu\'a destination';
+    final firstSegment = _buildSegmentStops(
+      stopIds: segmentAStopIds,
+      stopLookup: stopLookup,
+      firstLabel: 'Arret de depart',
+      lastLabel: 'Correspondance vers $lineB',
+      firstKind: TripStopKind.start,
+      lastKind: TripStopKind.middle,
+      firstFallbackName: fromStopName,
+    );
+    if (segmentBStopIds.length <= 1) return firstSegment;
 
-    return [
-      TripStop(
-        name: fromLabel,
-        label: walkToStop,
-        kind: TripStopKind.start,
-      ),
-      TripStop(
-        name: fromStopName,
-        label: '$lineA \u2022 $stopCount arrets',
-        kind: TripStopKind.middle,
-      ),
-      TripStop(
-        name: 'Correspondance',
-        label: 'Changer vers $lineB',
-        kind: TripStopKind.middle,
-      ),
-      TripStop(
-        name: toStopName,
-        label: 'Descendre du bus',
-        kind: TripStopKind.middle,
-      ),
-      TripStop(
-        name: toLabel,
-        label: walkToDestination,
-        kind: TripStopKind.end,
-      ),
-    ];
+    final secondSegment = _buildSegmentStops(
+      stopIds: segmentBStopIds.sublist(1),
+      stopLookup: stopLookup,
+      firstLabel: 'Arret',
+      lastLabel: 'Arret d\'arrivee',
+      firstKind: TripStopKind.middle,
+      lastKind: TripStopKind.end,
+      lastFallbackName: toStopName,
+    );
+    return [...firstSegment, ...secondSegment];
+  }
+
+  List<TripStop> _buildSegmentStops({
+    required List<String> stopIds,
+    required Map<String, StopLocation> stopLookup,
+    required String firstLabel,
+    required String lastLabel,
+    required TripStopKind firstKind,
+    required TripStopKind lastKind,
+    String middleLabel = 'Arret',
+    String? firstFallbackName,
+    String? lastFallbackName,
+  }) {
+    if (stopIds.isEmpty) return const [];
+    if (stopIds.length == 1) {
+      return [
+        TripStop(
+          name: _resolveStopName(
+            stopIds.first,
+            stopLookup,
+            fallback: lastFallbackName ?? firstFallbackName,
+          ),
+          label: lastLabel,
+          kind: lastKind,
+        ),
+      ];
+    }
+
+    final result = <TripStop>[];
+    for (int i = 0; i < stopIds.length; i++) {
+      final isFirst = i == 0;
+      final isLast = i == stopIds.length - 1;
+      final label = isFirst
+          ? firstLabel
+          : isLast
+          ? lastLabel
+          : middleLabel;
+      final kind = isFirst
+          ? firstKind
+          : isLast
+          ? lastKind
+          : TripStopKind.middle;
+      final fallback = isFirst
+          ? firstFallbackName
+          : isLast
+          ? lastFallbackName
+          : null;
+      result.add(
+        TripStop(
+          name: _resolveStopName(stopIds[i], stopLookup, fallback: fallback),
+          label: label,
+          kind: kind,
+        ),
+      );
+    }
+    return result;
+  }
+
+  String _resolveStopName(
+    String stopId,
+    Map<String, StopLocation> stopLookup, {
+    String? fallback,
+  }) {
+    final stop = stopLookup[stopId];
+    if (stop != null && stop.name.trim().isNotEmpty) {
+      return stop.name.trim();
+    }
+    final trimmedFallback = fallback?.trim();
+    if (trimmedFallback != null && trimmedFallback.isNotEmpty) {
+      return trimmedFallback;
+    }
+    return stopId;
   }
 
   int _walkMinutes(double km) {
     if (km <= 0) return 0;
     return ((km / 4.5) * 60).round();
-  }
-
-  bool _isSamePlace(String a, String b) {
-    return a.trim().toLowerCase() == b.trim().toLowerCase();
   }
 
   List<TripOption> _dedupeTrips(List<TripOption> trips) {

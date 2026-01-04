@@ -58,7 +58,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
   void _startMapUpdates() {
     _positionSub?.cancel();
 
-    // Suivi simple: on met à jour la carte à chaque nouvelle position GPS.
+    
     const settings = LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 5,
@@ -119,7 +119,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
-          // HEADER: infos de service (ligne + bus + statut).
+          
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
@@ -152,7 +152,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
                   ],
                 ),
 
-                // Badge d'état (pour l'instant: toujours "En service").
+                
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -212,7 +212,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
 
           if (_gpsError != null) const SizedBox(height: 16),
 
-          // CARTE: exemple simple avec un marker statique.
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
@@ -258,7 +258,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
 
           const SizedBox(height: 20),
 
-          // ACTIONS: boutons placeholder (non branchés pour l'instant).
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -301,7 +301,7 @@ class _FollowLinePageState extends State<FollowLinePage> {
 
           const SizedBox(height: 16),
 
-          // FIN DU SERVICE: pour l'instant on revient simplement à l'écran précédent.
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SizedBox(

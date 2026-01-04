@@ -50,6 +50,20 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
         throw Exception('Missing uid');
       }
 
+      if (!(credential.user?.emailVerified ?? false)) {
+        await credential.user?.sendEmailVerification();
+        await _auth.signOut();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Email non verifie. Verifiez votre boite mail.',
+            ),
+          ),
+        );
+        return;
+      }
+
       final role = await requireUserRole(_auth, uid);
       if (role != UserRole.user) {
         await _auth.signOut();
@@ -75,7 +89,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
 
   Future<void> _resetPassword() async {
     final email = _normalizedEmail();
-    if (email.isEmpty || !email.contains('@')) {
+    if (!isValidEmail(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Saisissez d’abord un email valide.')),
       );
@@ -118,7 +132,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                   validator: (value) {
                     final email = (value ?? '').trim();
                     if (email.isEmpty) return 'Veuillez saisir votre email.';
-                    if (!email.contains('@')) return 'Email invalide.';
+                    if (!isValidEmail(email)) return 'Email invalide.';
                     return null;
                   },
                 ),

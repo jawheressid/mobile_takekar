@@ -58,17 +58,17 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
         busId: busId,
         lineName: selectedLine!,
       );
-      if (!context.mounted) return;
+      if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => FollowLinePage(run: run)),
       );
     } catch (error) {
-      if (!context.mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(friendlyDriverRunErrorMessage(error))),
       );
     } finally {
-      if (context.mounted) {
+      if (mounted) {
         setState(() => _starting = false);
       }
     }

@@ -115,6 +115,14 @@ class AuthService {
   Future<void> signOut() => _auth.signOut();
 }
 
+bool isValidEmail(String email) {
+  final trimmed = email.trim();
+  if (trimmed.isEmpty) return false;
+  final regex =
+      RegExp(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+  return regex.hasMatch(trimmed);
+}
+
 class MissingUserRoleException implements Exception {
   MissingUserRoleException(this.uid);
   final String uid;

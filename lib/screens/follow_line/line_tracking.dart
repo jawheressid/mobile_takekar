@@ -45,7 +45,7 @@ class _LineTrackingScreenState extends State<LineTrackingScreen> {
     _listenUserLocation();
   }
 
-  // Ecoute les positions du chauffeur en temps reel.
+  
   void _listenBusLocation() {
     _busSub?.cancel();
     _busSub = _service
@@ -65,7 +65,7 @@ class _LineTrackingScreenState extends State<LineTrackingScreen> {
     });
   }
 
-  // Ecoute la position utilisateur pour calculer l'ETA.
+  
   Future<void> _listenUserLocation() async {
     try {
       final enabled = await Geolocator.isLocationServiceEnabled();
@@ -110,7 +110,7 @@ class _LineTrackingScreenState extends State<LineTrackingScreen> {
     _mapController.move(point, _mapZoom);
   }
 
-  // ETA simple = distance / vitesse.
+  
   int? _estimateEtaMinutes() {
     final location = _busLocation;
     final userPoint = _userPoint;

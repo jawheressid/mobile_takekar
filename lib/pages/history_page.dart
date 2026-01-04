@@ -49,7 +49,6 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tripCount = _items.length;
-    final totalTnd = _items.fold<double>(0, (sum, e) => sum + e.priceTnd);
     final totalMinutes = _items.fold<int>(
       0,
       (sum, e) => sum + e.durationMinutes,
@@ -104,13 +103,6 @@ class HistoryPage extends StatelessWidget {
                         child: _SummaryCard(
                           value: '$tripCount',
                           label: 'Trajets',
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _SummaryCard(
-                          value: '${totalTnd.toStringAsFixed(2)} DT',
-                          label: 'Dépenses',
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -264,14 +256,6 @@ class _HistoryTripCard extends StatelessWidget {
                         ],
                       ),
                     ],
-                  ),
-                ),
-                Text(
-                  '${item.priceTnd.toStringAsFixed(2)} DT',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
                   ),
                 ),
               ],

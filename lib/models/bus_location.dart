@@ -36,7 +36,7 @@ class BusLocation {
     );
   }
 
-  // Parse une localisation depuis le payload RTDB (liveRuns).
+  
   static BusLocation? fromRealtimeMap(dynamic raw) {
     if (raw is! Map) return null;
 

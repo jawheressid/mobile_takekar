@@ -35,7 +35,7 @@ class DriverRunService {
     final busRef = _firestore.collection('buses').doc(busId);
     final driverRef = _firestore.collection('drivers').doc(user.uid);
 
-    // Transaction: crée le run et verrouille bus + chauffeur.
+    
     await _firestore.runTransaction((tx) async {
       final busSnap = await tx.get(busRef);
       if (!busSnap.exists) {
@@ -50,7 +50,7 @@ class DriverRunService {
       final driverData = driverSnap.data() ?? <String, dynamic>{};
       final allowedBusIds = driverData['allowedBusIds'];
       if (allowedBusIds is List) {
-        // Liste vide ou absente = pas d’accès.
+        
         if (allowedBusIds.isEmpty) {
           throw const DriverRunException(DriverRunError.busNotAllowed);
         }
@@ -66,13 +66,13 @@ class DriverRunService {
         throw const DriverRunException(DriverRunError.busNotAllowed);
       }
 
-      // Empêche un chauffeur d’avoir deux services actifs.
+      
       final activeRunId = driverData['activeRunId'];
       if (activeRunId is String && activeRunId.isNotEmpty) {
         throw const DriverRunException(DriverRunError.driverAlreadyRunning);
       }
 
-      // Empêche un bus d’être démarré deux fois.
+      
       final busData = busSnap.data() ?? <String, dynamic>{};
       final currentRunId = busData['currentRunId'];
       if (currentRunId is String && currentRunId.isNotEmpty) {
@@ -141,7 +141,7 @@ class DriverRunService {
     final speedKmh = position.speed.isNaN ? null : position.speed * 3.6;
     final heading = position.heading.isNaN ? null : position.heading;
 
-    // RTDB garde un seul nœud par run, mis à jour toutes les 15s.
+    
     final payload = {
       'busId': run.busId,
       'lineId': run.lineId,
@@ -210,7 +210,7 @@ class DriverRunTracker {
     await _service.ensureLocationReady();
     await _service.pushLocation(_run);
 
-    // Timer simple: envoi GPS périodique.
+    
     _timer?.cancel();
     _timer = Timer.periodic(interval, (_) => _tick());
   }

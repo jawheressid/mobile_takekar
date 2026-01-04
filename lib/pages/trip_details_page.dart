@@ -30,7 +30,7 @@ class TripDetailsPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Header jaune avec le nom de la ligne.
+            
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 22),
@@ -72,7 +72,7 @@ class TripDetailsPage extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  // Résumé (durée / prix / distance)
+                  
                   _SectionCard(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -80,10 +80,6 @@ class TripDetailsPage extends StatelessWidget {
                         _Metric(
                           label: 'Durée',
                           value: '${trip.durationMinutes} min',
-                        ),
-                        _Metric(
-                          label: 'Prix',
-                          value: '${trip.priceTnd.toStringAsFixed(2)} DT',
                         ),
                         _Metric(
                           label: 'Distance',
@@ -95,7 +91,7 @@ class TripDetailsPage extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  // Horaires (chips)
+                  
                   const _SectionTitle(icon: Icons.schedule, title: 'Horaires'),
                   const SizedBox(height: 10),
                   _SectionCard(
@@ -129,7 +125,7 @@ class TripDetailsPage extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  // Arrêts (timeline simple)
+                  
                   _SectionTitle(
                     icon: Icons.pin_drop_outlined,
                     title: 'Arrêts (${trip.path.length})',
@@ -262,7 +258,7 @@ class _StopRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Timeline: point + ligne verticale
+        
         Column(
           children: [
             Container(

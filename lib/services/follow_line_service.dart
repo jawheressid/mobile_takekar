@@ -13,7 +13,7 @@ class FollowLineService {
   final FirebaseFirestore _firestore;
   final FirebaseDatabase _database;
 
-  // Keep it simple: try Firestore, fallback to hardcoded lists.
+  
   Future<List<String>> fetchLines() async {
     try {
       final snapshot = await _firestore.collection('lines').get();
@@ -95,7 +95,7 @@ class FollowLineService {
     BusLocation? latest;
     var latestMillis = -1;
 
-    // liveRuns contient plusieurs services actifs; on prend le plus récent.
+    
     for (final value in raw.values) {
       final location = BusLocation.fromRealtimeMap(value);
       if (location == null) continue;
@@ -125,7 +125,7 @@ class FollowLineService {
     final fallbackStop =
         lineInfo.active ? null : await _fallbackStopForLine(lineInfo.id);
 
-    // Flux temps réel depuis RTDB (liveRuns).
+    
     final query = _database
         .ref('liveRuns')
         .orderByChild('lineId')

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../models/trip_option.dart';
@@ -39,7 +38,7 @@ class _TripResultsPageState extends State<TripResultsPage> {
       const TripResultsArgs(fromLabel: 'Depart', toLabel: 'Arrivee');
   Future<List<TripOption>>? _tripsFuture;
 
-  // Filtre: temps d'attente max (en minutes).
+  
   double maxWaitMinutes = 45;
 
   @override
@@ -98,7 +97,7 @@ class _TripResultsPageState extends State<TripResultsPage> {
 
             return Column(
               children: [
-                // Header jaune "Résultats"
+                
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(18, 14, 18, 22),
@@ -136,7 +135,7 @@ class _TripResultsPageState extends State<TripResultsPage> {
 
                 const SizedBox(height: 12),
 
-                // Zone de filtres (simple)
+                
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
@@ -303,9 +302,6 @@ class _TripCard extends StatelessWidget {
                   _InfoPill(
                     icon: Icons.schedule,
                     text: '${trip.durationMinutes} min',
-                  ),
-                  _InfoPill(
-                    text: '${trip.priceTnd.toStringAsFixed(2)} DT',
                   ),
                   _InfoPill(
                     icon: Icons.place_outlined,

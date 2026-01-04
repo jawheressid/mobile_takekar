@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../widgets/gradient_shell.dart';
 import '../../widgets/inputs.dart';
 import '../../widgets/buttons.dart';
-import '../user_dashboard.dart';
 import 'user_login.dart';
 import '../../services/auth_service.dart';
 import '../../models/user_role.dart';
@@ -64,10 +63,23 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
         fullName: fullName.isEmpty ? null : fullName,
       );
 
+      if (!(credential.user?.emailVerified ?? false)) {
+        await credential.user?.sendEmailVerification();
+      }
+      await _auth.signOut();
+
       if (!mounted) return;
-      Navigator.of(
-        context,
-      ).pushNamedAndRemoveUntil(UserDashboardScreen.route, (route) => false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Un email de verification a ete envoye. Verifiez votre boite mail.',
+          ),
+        ),
+      );
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        UserLoginScreen.route,
+        (route) => false,
+      );
     } catch (e) {
       if (!mounted) return;
       final message = (e is FirebaseAuthException)
@@ -117,7 +129,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                   validator: (value) {
                     final email = (value ?? '').trim();
                     if (email.isEmpty) return 'Veuillez saisir votre email.';
-                    if (!email.contains('@')) return 'Email invalide.';
+                    if (!isValidEmail(email)) return 'Email invalide.';
                     return null;
                   },
                 ),

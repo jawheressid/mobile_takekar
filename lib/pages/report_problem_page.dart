@@ -19,7 +19,7 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // 🔶 HEADER JAUNE
+            
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
@@ -57,7 +57,7 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
 
             const SizedBox(height: 20),
 
-            // 🔶 FORMULAIRE
+            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -108,7 +108,7 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
 
                   const SizedBox(height: 20),
 
-                  // 🔶 BOUTON
+                  
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -120,7 +120,7 @@ class _ReportProblemPageState extends State<ReportProblemPage> {
                         ),
                       ),
                       onPressed: () {
-                        // PLUS TARD : envoyer à Firebase
+                        
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Signalement envoyé ✅')),
                         );
