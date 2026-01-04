@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 import '../models/bus_location.dart';
+import '../models/line_route.dart';
+import '../models/stop_location.dart';
 
 class FollowLineService {
   FollowLineService({FirebaseFirestore? firestore, FirebaseDatabase? database})
@@ -46,7 +48,7 @@ class FollowLineService {
     return const ['Centre-ville', 'Nord', 'Sud'];
   }
 
-  Future<String?> _fetchLineId({
+  Future<_LineInfo?> _fetchLineInfo({
     required String lineName,
     required String regionName,
   }) async {
@@ -61,13 +63,30 @@ class FollowLineService {
             .where('regions', arrayContains: trimmedRegion)
             .limit(1)
             .get();
-        if (regional.docs.isNotEmpty) return regional.docs.first.id;
+        if (regional.docs.isNotEmpty) {
+          final doc = regional.docs.first;
+          return _LineInfo(
+            id: doc.id,
+            active: _isActive(doc.data()),
+          );
+        }
       }
 
       final snapshot = await baseQuery.limit(1).get();
-      if (snapshot.docs.isNotEmpty) return snapshot.docs.first.id;
+      if (snapshot.docs.isNotEmpty) {
+        final doc = snapshot.docs.first;
+        return _LineInfo(
+          id: doc.id,
+          active: _isActive(doc.data()),
+        );
+      }
     } catch (_) {}
     return null;
+  }
+
+  bool _isActive(Map<String, dynamic> data) {
+    final active = data['active'];
+    return active is bool ? active : true;
   }
 
   BusLocation? _latestFromLiveRuns(dynamic raw) {
@@ -94,23 +113,69 @@ class FollowLineService {
     required String lineName,
     required String regionName,
   }) async* {
-    final lineId = await _fetchLineId(
+    final lineInfo = await _fetchLineInfo(
       lineName: lineName,
       regionName: regionName,
     );
-    if (lineId == null) {
+    if (lineInfo == null) {
       yield null;
       return;
     }
+
+    final fallbackStop =
+        lineInfo.active ? null : await _fallbackStopForLine(lineInfo.id);
 
     // Flux temps réel depuis RTDB (liveRuns).
     final query = _database
         .ref('liveRuns')
         .orderByChild('lineId')
-        .equalTo(lineId);
+        .equalTo(lineInfo.id);
 
     await for (final event in query.onValue) {
-      yield _latestFromLiveRuns(event.snapshot.value);
+      final live = _latestFromLiveRuns(event.snapshot.value);
+      if (live != null) {
+        yield live;
+        continue;
+      }
+      if (fallbackStop != null) {
+        yield BusLocation(
+          latitude: fallbackStop.latitude,
+          longitude: fallbackStop.longitude,
+          speedKmh: 0,
+          updatedAt: DateTime.now(),
+        );
+      } else {
+        yield null;
+      }
     }
   }
+
+  Future<StopLocation?> _fallbackStopForLine(String lineId) async {
+    try {
+      final routeSnapshot = await _firestore
+          .collection('line_routes')
+          .where('lineId', isEqualTo: lineId)
+          .limit(1)
+          .get();
+      if (routeSnapshot.docs.isEmpty) return null;
+
+      final route = LineRoute.fromDoc(
+        routeSnapshot.docs.first.id,
+        routeSnapshot.docs.first.data(),
+      );
+      if (route == null || route.stopIds.isEmpty) return null;
+
+      final stopSnapshot =
+          await _firestore.collection('stops').doc(route.stopIds.first).get();
+      return StopLocation.fromDoc(stopSnapshot);
+    } catch (_) {}
+    return null;
+  }
+}
+
+class _LineInfo {
+  const _LineInfo({required this.id, required this.active});
+
+  final String id;
+  final bool active;
 }

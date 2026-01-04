@@ -1,0 +1,4 @@
+id,name,active,regions
+line_3,Ligne 3,true,"[\"Centre-ville\",\"Nord\"]"
+line_7,Ligne 7,false,"[\"Centre-ville\",\"Sud\"]"
+line_12,Ligne 12,true,"[\"Centre-ville\",\"Nord\"]"

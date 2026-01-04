@@ -1,0 +1,4 @@
+id,lineId,lineName,direction,stopIds
+route_line_3_dir0,line_3,Ligne 3,0,"[\"stop_republique\",\"stop_habib_bourguiba\",\"stop_centre_commercial\",\"stop_lafayette\",\"stop_geant\"]"
+route_line_7_dir0,line_7,Ligne 7,0,"[\"stop_gare_centrale\",\"stop_bab_el_bhar\",\"stop_rue_marseille\",\"stop_centre_commercial\",\"stop_universite\"]"
+route_line_12_dir0,line_12,Ligne 12,0,"[\"stop_bab_saadoun\",\"stop_lafayette\",\"stop_bab_el_bhar\",\"stop_gare_centrale\",\"stop_republique\"]"

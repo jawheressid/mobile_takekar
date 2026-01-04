@@ -1,0 +1,11 @@
+id,name,lat,lng,city,geohash
+stop_republique,Place de la Republique,36.8026,10.1800,Tunis,
+stop_habib_bourguiba,Avenue Habib Bourguiba,36.8005,10.1783,Tunis,
+stop_bab_el_bhar,Bab El Bhar,36.7978,10.1736,Tunis,
+stop_rue_marseille,Rue de Marseille,36.7986,10.1841,Tunis,
+stop_centre_commercial,Centre Commercial,36.8084,10.1882,Tunis,
+stop_lafayette,Station Lafayette,36.8112,10.1753,Tunis,
+stop_bab_saadoun,Bab Saadoun,36.8147,10.1655,Tunis,
+stop_geant,Geant,36.8570,10.2000,Tunis,
+stop_universite,Universite,36.8413,10.1971,Tunis,
+stop_gare_centrale,Gare Centrale,36.8001,10.1815,Tunis,
